@@ -109,3 +109,105 @@ HKUConnect - iOS Application Project Overview
     - Data persistence
   - Local data storage for chats
   - No content moderation system
+
+```
+UniMate/
+├── App/
+│   ├── UniMateApp.swift
+│   ├── AppDelegate.swift
+│   └── AppCoordinator.swift
+│
+├── Core/
+│   ├── Services/
+│   │   ├── Network/
+│   │   │   ├── NetworkService.swift
+│   │   │   ├── Endpoint.swift
+│   │   │   └── HTTPMethod.swift
+│   │   ├── Authentication/
+│   │   │   ├── AuthenticationService.swift
+│   │   │   └── KeychainService.swift
+│   │   ├── Chat/
+│   │   │   ├── ChatService.swift
+│   │   │   └── WebSocketService.swift
+│   │   └── Storage/
+│   │       └── StorageManager.swift
+│   │
+│   ├── Utils/
+│   │   ├── Extensions/
+│   │   ├── Helpers/
+│   │   └── Constants.swift
+│   │
+│   └── Models/
+│       ├── User.swift
+│       ├── Message.swift
+│       ├── Chat.swift
+│       ├── Post.swift
+│       └── Match.swift
+│
+├── Features/
+│   ├── Authentication/
+│   │   ├── Views/
+│   │   │   ├── AuthenticationFlow.swift
+│   │   │   ├── SignInView.swift
+│   │   │   ├── SignUpView.swift
+│   │   │   ├── ForgotPasswordView.swift
+│   │   │   └── VerificationView.swift
+│   │   └── ViewModels/
+│   │       └── AuthenticationViewModel.swift
+│   │
+│   ├── Chat/
+│   │   ├── Views/
+│   │   │   ├── ChatListView.swift
+│   │   │   ├── ChatView.swift
+│   │   │   └── ChatBubbleView.swift
+│   │   └── ViewModels/
+│   │       ├── ChatListViewModel.swift
+│   │       └── ChatViewModel.swift
+│   │
+│   ├── Match/
+│   │   ├── Views/
+│   │   │   ├── MatchView.swift
+│   │   │   ├── MatchCardView.swift
+│   │   │   └── MatchDetailView.swift
+│   │   └── ViewModels/
+│   │       └── MatchViewModel.swift
+│   │
+│   ├── Forum/
+│   │   ├── Views/
+│   │   │   ├── ForumView.swift
+│   │   │   ├── PostListView.swift
+│   │   │   ├── PostDetailView.swift
+│   │   │   └── CreatePostView.swift
+│   │   └── ViewModels/
+│   │       ├── ForumViewModel.swift
+│   │       └── PostViewModel.swift
+│   │
+│   └── Profile/
+│       ├── Views/
+│       │   ├── ProfileView.swift
+│       │   ├── EditProfileView.swift
+│       │   └── SettingsView.swift
+│       └── ViewModels/
+│           └── ProfileViewModel.swift
+│
+├── UI/
+│   ├── Components/
+│   │   ├── Buttons/
+│   │   ├── TextFields/
+│   │   ├── LoadingView.swift
+│   │   └── ErrorView.swift
+│   │
+│   ├── Styles/
+│   │   ├── Colors.swift
+│   │   ├── Typography.swift
+│   │   └── ViewModifiers.swift
+│   │
+│   └── Resources/
+│       ├── Assets.xcassets/
+│       └── Localizable.strings
+│
+└── Configuration/
+    ├── Info.plist
+    ├── AppConfiguration.swift
+    └── Debug.xcconfig
+```
