@@ -113,97 +113,95 @@ HKUConnect - iOS Application Project Overview
 ```
 UniMate/
 ├── App/
-│   ├── UniMateApp.swift          // Main app entry point, setup app environment
-│   └── AppDelegate.swift         // Firebase configuration and app delegate lifecycle
+│   ├── UniMateApp.swift          // App entry, manages HKU email verification flow
+│   └── AppDelegate.swift         // App lifecycle management
 │
 ├── Features/
 │   ├── Authentication/
 │   │   ├── Views/
-│   │   │   ├── LoginView.swift         // Login screen UI
-│   │   │   ├── SignUpView.swift        // Registration screen UI
-│   │   │   └── AuthenticationView.swift // Container view for auth flow
+│   │   │   ├── LoginView.swift         // Login with Face ID/Password
+│   │   │   ├── ResetPasswordView.swift  // Password reset via email
+│   │   │   └── EmailVerificationView.swift // HKU email verification
 │   │   ├── ViewModels/
-│   │   │   └── AuthViewModel.swift      // Handles auth business logic and Firebase Auth
+│   │   │   └── AuthViewModel.swift      // Auth logic for HKU domain
 │   │   └── Models/
-│   │       └── User.swift               // User data model and Codable conformance
+│   │       └── User.swift               // User with HKU specific fields
 │   │
 │   ├── Profile/
 │   │   ├── Views/
-│   │   │   ├── ProfileView.swift        // User profile display
-│   │   │   └── EditProfileView.swift    // Profile editing screen
+│   │   │   ├── ProfileView.swift        // Shows username, picture, academic status
+│   │   │   └── EditProfileView.swift    // Edit profile and tags (max 6)
 │   │   ├── ViewModels/
-│   │   │   └── ProfileViewModel.swift    // Profile data management and updates
+│   │   │   └── ProfileViewModel.swift    // Profile and tags management
 │   │   └── Models/
-│   │       └── Profile.swift             // Profile data structure
+│   │       └── Profile.swift             // Profile with tags structure
 │   │
 │   ├── Match/
 │   │   ├── Views/
-│   │   │   ├── MatchView.swift          // Main matching interface
-│   │   │   └── MatchDetailView.swift    // Detailed match profile view
+│   │   │   ├── NearbyUsersView.swift    // 400m radius user display
+│   │   │   └── UserDetailView.swift     // Show user tags and connection option
 │   │   ├── ViewModels/
-│   │   │   └── MatchViewModel.swift      // Matching logic and algorithms
+│   │   │   └── MatchViewModel.swift      // Nearby users and connection logic
 │   │   └── Models/
-│   │       └── Match.swift               // Match data structure
+│   │       └── Connection.swift          // Connection request structure
 │   │
 │   ├── Chat/
 │   │   ├── Views/
-│   │   │   ├── ChatListView.swift       // List of chat conversations
-│   │   │   └── ChatDetailView.swift     // Individual chat conversation
+│   │   │   ├── ChatListView.swift       // Individual and group chats (max 15)
+│   │   │   ├── ChatDetailView.swift     // Chat with media support
+│   │   │   └── StorageView.swift        // Shows chat storage usage
 │   │   ├── ViewModels/
-│   │   │   └── ChatViewModel.swift       // Real-time chat management
+│   │   │   └── ChatViewModel.swift       // Local chat management
 │   │   └── Models/
-│   │       ├── Message.swift             // Message data structure
-│   │       └── ChatRoom.swift            // Chat room data structure
+│   │       ├── Message.swift             // Message with edit/delete
+│   │       └── ChatRoom.swift            // Chat room with storage info
 │   │
-│   └── Forum/
+│   ├── Forum/
+│   │   ├── Views/
+│   │   │   ├── ForumListView.swift      // Latest and trending posts
+│   │   │   ├── CategoryView.swift       // 5 main categories view
+│   │   │   └── PostDetailView.swift     // Post with media, likes, comments
+│   │   ├── ViewModels/
+│   │   │   └── ForumViewModel.swift      // Posts and engagement management
+│   │   └── Models/
+│   │       ├── Post.swift                // Post with multi-category support
+│   │       └── Comment.swift             // Comment structure
+│   │
+│   └── AR/
 │       ├── Views/
-│       │   ├── ForumListView.swift      // List of forum posts
-│       │   └── PostDetailView.swift     // Individual post with comments
+│       │   └── ARMessageView.swift      // AR campus message viewer
 │       ├── ViewModels/
-│       │   └── ForumViewModel.swift      // Forum data management
+│       │   └── ARViewModel.swift         // AR message management
 │       └── Models/
-│           ├── Post.swift                // Post data structure
-│           └── Comment.swift             // Comment data structure
+│           └── ARMessage.swift           // Virtual message structure
 │
 ├── Core/
-│   ├── Services/
-│   │   ├── FirebaseService.swift        // Firebase operations wrapper
-│   │   ├── AuthService.swift            // Authentication service
-│   │   ├── StorageService.swift         // Firebase Storage operations
-│   │   └── ImageService.swift           // Image loading and caching
+│   ├── Location/
+│   │   ├── LocationManager.swift        // 400m radius tracking
+│   │   └── LocationPermission.swift     // Location authorization
 │   │
 │   ├── Persistence/
-│   │   ├── Persistence.swift            // Core Data stack and setup
-│   │   ├── PersistenceController.swift  // Manages Core Data operations
-│   │   └── UniMate.xcdatamodeld         // Core Data model file
+│   │   ├── Persistence.swift            // Auto-generated Core Data stack
+│   │   ├── PersistenceController.swift  // Our custom Core Data operations
+│   │   └── UniMate.xcdatamodeld/       // Core Data model
+│   │       └── UniMate.xcdatamodel     // Data model definition
 │   │
 │   ├── Extensions/
-│   │   ├── Color+Extension.swift        // Custom color definitions
-│   │   ├── Date+Extension.swift         // Date formatting utilities
-│   │   └── String+Extension.swift       // String validation and formatting
+│   │   └── String+TagValidation.swift   // Tag formatting rules
 │   │
 │   └── Utilities/
-│       ├── Constants.swift              // App-wide constants
-│       ├── Validators.swift             // Input validation
-│       └── ErrorHandling.swift          // Custom error types and handling
+│       ├── StorageCalculator.swift      // Chat storage size calculation
+│       └── NotificationManager.swift     // Local notifications handling
 │
 ├── UI/
-│   ├── Components/
-│   │   ├── CustomButton.swift           // Reusable button styles
-│   │   ├── CustomTextField.swift        // Custom text input fields
-│   │   ├── LoadingView.swift            // Loading animation view
-│   │   ├── MessageBubble.swift          // Chat message bubble
-│   │   └── UserAvatar.swift             // User profile image view
-│   │
-│   ├── Styles/
-│   │   ├── AppColors.swift              // App color scheme
-│   │   └── AppFonts.swift               // Typography definitions
-│   │
-│   └── Modifiers/
-│       └── ViewModifiers.swift          // Custom SwiftUI view modifiers
+│   └── Components/
+│       ├── MediaPicker.swift            // Camera and photo picker
+│       └── TagInput.swift               // Tag creation with rules
 │
 └── Resources/
-    ├── GoogleService-Info.plist         // Firebase configuration file
+    ├── Persistence.swift                // Auto-generated Core Data file
+    ├── UniMate.xcdatamodeld/           // Auto-generated Core Data model
+    │   └── UniMate.xcdatamodel         // Data model definition
     ├── Info.plist                       // App configuration
-    └── Assets.xcassets                  // App images and assets
+    └── Assets.xcassets                  // App assets
 ```
