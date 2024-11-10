@@ -134,7 +134,18 @@ UniMate/
 │   │
 │   ├── Utils/
 │   │   ├── Extensions/
+│   │   │   ├── Color+Extension.swift
+│   │   │   ├── Date+Extension.swift
+│   │   │   ├── String+Extension.swift
+│   │   │   ├── View+Extension.swift
+│   │   │   ├── UIImage+Extension.swift
+│   │   │   └── Bundle+Extension.swift
 │   │   ├── Helpers/
+│   │   │   ├── Validators.swift
+│   │   │   ├── DateFormatter.swift
+│   │   │   ├── ImageLoader.swift
+│   │   │   ├── Logger.swift
+│   │   │   └── Analytics.swift
 │   │   └── Constants.swift
 │   │
 │   └── Models/
@@ -193,7 +204,17 @@ UniMate/
 ├── UI/
 │   ├── Components/
 │   │   ├── Buttons/
+│   │   │   ├── PrimaryButton.swift
+│   │   │   ├── SecondaryButton.swift
+│   │   │   ├── IconButton.swift
+│   │   │   ├── SocialButton.swift
+│   │   │   └── LoadingButton.swift
 │   │   ├── TextFields/
+│   │   │   ├── CustomTextField.swift
+│   │   │   ├── SearchTextField.swift
+│   │   │   ├── EmailTextField.swift
+│   │   │   ├── PasswordTextField.swift
+│   │   │   └── ChatTextField.swift
 │   │   ├── LoadingView.swift
 │   │   └── ErrorView.swift
 │   │
@@ -204,6 +225,9 @@ UniMate/
 │   │
 │   └── Resources/
 │       ├── Assets.xcassets/
+│       │   ├── AppIcon.appiconset/
+│       │   ├── Colors.xcassets/
+│       │   └── Images.xcassets/
 │       └── Localizable.strings
 │
 └── Configuration/
