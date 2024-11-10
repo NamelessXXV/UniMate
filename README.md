@@ -1,5 +1,5 @@
-HKUConnect - iOS Application Project Overview
-1. Core Features
+#HKUConnect - iOS Application Project Overview
+##1. Core Features
 Authentication System
 HKU Email Domain (@connect.hku.hk) verification
 Login Methods:
