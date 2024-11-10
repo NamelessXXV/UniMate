@@ -113,125 +113,138 @@ HKUConnect - iOS Application Project Overview
 ```
 UniMate/
 ├── App/
-│   ├── UniMateApp.swift
-│   ├── AppDelegate.swift
-│   └── AppCoordinator.swift
+│   ├── UniMateApp.swift              // Main app entry point, sets up environment and root view
+│   ├── AppDelegate.swift             // Handles app lifecycle and Firebase setup
+│   ├── AppCoordinator.swift          // Manages app navigation and authentication state
+│   └── Persistence.swift             // CoreData stack setup and management
 │
 ├── Core/
 │   ├── Services/
 │   │   ├── Network/
-│   │   │   ├── NetworkService.swift
-│   │   │   ├── Endpoint.swift
-│   │   │   └── HTTPMethod.swift
+│   │   │   ├── NetworkService.swift  // Generic network request handling
+│   │   │   ├── Endpoint.swift        // API endpoint configuration
+│   │   │   └── HTTPMethod.swift      // HTTP method definitions (GET, POST, etc.)
 │   │   ├── Authentication/
-│   │   │   ├── AuthenticationService.swift
-│   │   │   └── KeychainService.swift
+│   │   │   ├── AuthenticationService.swift  // Firebase auth operations
+│   │   │   └── KeychainService.swift        // Secure credential storage
 │   │   ├── Chat/
-│   │   │   ├── ChatService.swift
-│   │   │   └── WebSocketService.swift
-│   │   └── Storage/
-│   │       └── StorageManager.swift
+│   │   │   ├── ChatService.swift            // Firebase real-time chat operations
+│   │   │   ├── WebSocketService.swift       // Real-time connection management
+│   │   │   └── LocalChatService.swift       // CoreData chat history operations
+│   │   ├── Storage/
+│   │   │   ├── StorageManager.swift         // Firebase Storage (images, files)
+│   │   │   └── LocalStorageManager.swift    // CoreData CRUD operations
+│   │   └── Database/
+│   │       ├── FirebaseManager.swift        // Firebase Firestore operations
+│   │       └── CoreDataManager.swift        // CoreData context and operations
 │   │
 │   ├── Utils/
 │   │   ├── Extensions/
-│   │   │   ├── Color+Extension.swift
-│   │   │   ├── Date+Extension.swift
-│   │   │   ├── String+Extension.swift
-│   │   │   ├── View+Extension.swift
-│   │   │   ├── UIImage+Extension.swift
-│   │   │   └── Bundle+Extension.swift
+│   │   │   ├── Color+Extension.swift        // Custom color helpers
+│   │   │   ├── Date+Extension.swift         // Date formatting and calculations
+│   │   │   ├── String+Extension.swift       // String validation and formatting
+│   │   │   ├── View+Extension.swift         // SwiftUI view modifiers
+│   │   │   ├── UIImage+Extension.swift      // Image processing helpers
+│   │   │   ├── Bundle+Extension.swift       // Resource loading helpers
+│   │   │   └── NSManagedObject+Extension.swift  // CoreData convenience methods
 │   │   ├── Helpers/
-│   │   │   ├── Validators.swift
-│   │   │   ├── DateFormatter.swift
-│   │   │   ├── ImageLoader.swift
-│   │   │   ├── Logger.swift
-│   │   │   └── Analytics.swift
-│   │   └── Constants.swift
+│   │   │   ├── Validators.swift             // Input validation (email, password)
+│   │   │   ├── DateFormatter.swift          // Date formatting utilities
+│   │   │   ├── ImageLoader.swift            // Async image loading and caching
+│   │   │   ├── Logger.swift                 // Custom logging system
+│   │   │   └── Analytics.swift              // Firebase Analytics tracking
+│   │   └── Constants.swift                  // App-wide constants and configurations
 │   │
-│   └── Models/
-│       ├── User.swift
-│       ├── Message.swift
-│       ├── Chat.swift
-│       ├── Post.swift
-│       └── Match.swift
-│
+│   ├── Models/
+│   │   ├── Remote/                          // Firebase data models
+│   │   │   ├── User.swift                   // User profile data
+│   │   │   ├── Message.swift                // Chat message structure
+│   │   │   ├── Chat.swift                   // Chat thread structure
+│   │   │   ├── Post.swift                   // Forum post structure
+│   │   │   └── Match.swift                  // User matching data
+│   │   └── Local/                           // CoreData models
+│   │       ├── ChatMessage.swift            // Local chat message entity
+│   │       ├── ChatThread.swift             // Local chat thread entity
+│   │       ├── LocalUserPreferences.swift   // User settings entity
+│   │       └── CachedUserProfile.swift      // Cached user data entity
+│   │
 ├── Features/
 │   ├── Authentication/
 │   │   ├── Views/
-│   │   │   ├── AuthenticationFlow.swift
-│   │   │   ├── SignInView.swift
-│   │   │   ├── SignUpView.swift
-│   │   │   ├── ForgotPasswordView.swift
-│   │   │   └── VerificationView.swift
+│   │   │   ├── AuthenticationFlow.swift     // Auth navigation container
+│   │   │   ├── SignInView.swift            // Login screen
+│   │   │   ├── SignUpView.swift            // Registration screen
+│   │   │   ├── ForgotPasswordView.swift    // Password reset screen
+│   │   │   └── VerificationView.swift      // Email verification screen
 │   │   └── ViewModels/
-│   │       └── AuthenticationViewModel.swift
+│   │       └── AuthenticationViewModel.swift // Auth business logic
 │   │
 │   ├── Chat/
 │   │   ├── Views/
-│   │   │   ├── ChatListView.swift
-│   │   │   ├── ChatView.swift
-│   │   │   └── ChatBubbleView.swift
+│   │   │   ├── ChatListView.swift          // List of chat threads
+│   │   │   ├── ChatView.swift              // Individual chat conversation
+│   │   │   └── ChatBubbleView.swift        // Message bubble UI
 │   │   └── ViewModels/
-│   │       ├── ChatListViewModel.swift
-│   │       └── ChatViewModel.swift
+│   │       ├── ChatListViewModel.swift      // Chat list business logic
+│   │       └── ChatViewModel.swift          // Chat conversation logic
 │   │
 │   ├── Match/
 │   │   ├── Views/
-│   │   │   ├── MatchView.swift
-│   │   │   ├── MatchCardView.swift
-│   │   │   └── MatchDetailView.swift
+│   │   │   ├── MatchView.swift             // Main matching screen
+│   │   │   ├── MatchCardView.swift         // Swipeable match card
+│   │   │   └── MatchDetailView.swift       // User detail screen
 │   │   └── ViewModels/
-│   │       └── MatchViewModel.swift
+│   │       └── MatchViewModel.swift         // Matching logic
 │   │
 │   ├── Forum/
 │   │   ├── Views/
-│   │   │   ├── ForumView.swift
-│   │   │   ├── PostListView.swift
-│   │   │   ├── PostDetailView.swift
-│   │   │   └── CreatePostView.swift
+│   │   │   ├── ForumView.swift             // Main forum screen
+│   │   │   ├── PostListView.swift          // List of forum posts
+│   │   │   ├── PostDetailView.swift        // Individual post view
+│   │   │   └── CreatePostView.swift        // New post creation
 │   │   └── ViewModels/
-│   │       ├── ForumViewModel.swift
-│   │       └── PostViewModel.swift
+│   │       ├── ForumViewModel.swift         // Forum list logic
+│   │       └── PostViewModel.swift          // Post management logic
 │   │
 │   └── Profile/
 │       ├── Views/
-│       │   ├── ProfileView.swift
-│       │   ├── EditProfileView.swift
-│       │   └── SettingsView.swift
+│       │   ├── ProfileView.swift           // User profile display
+│       │   ├── EditProfileView.swift       // Profile editing
+│       │   └── SettingsView.swift          // App settings
 │       └── ViewModels/
-│           └── ProfileViewModel.swift
+│           └── ProfileViewModel.swift       // Profile management logic
 │
 ├── UI/
 │   ├── Components/
 │   │   ├── Buttons/
-│   │   │   ├── PrimaryButton.swift
-│   │   │   ├── SecondaryButton.swift
-│   │   │   ├── IconButton.swift
-│   │   │   ├── SocialButton.swift
-│   │   │   └── LoadingButton.swift
+│   │   │   ├── PrimaryButton.swift         // Main action button
+│   │   │   ├── SecondaryButton.swift       // Alternative action button
+│   │   │   ├── IconButton.swift            // Icon-based button
+│   │   │   ├── SocialButton.swift          // Social login button
+│   │   │   └── LoadingButton.swift         // Button with loading state
 │   │   ├── TextFields/
-│   │   │   ├── CustomTextField.swift
-│   │   │   ├── SearchTextField.swift
-│   │   │   ├── EmailTextField.swift
-│   │   │   ├── PasswordTextField.swift
-│   │   │   └── ChatTextField.swift
-│   │   ├── LoadingView.swift
-│   │   └── ErrorView.swift
+│   │   │   ├── CustomTextField.swift       // Base text field
+│   │   │   ├── SearchTextField.swift       // Search input field
+│   │   │   ├── EmailTextField.swift        // Email input field
+│   │   │   ├── PasswordTextField.swift     // Secure password field
+│   │   │   └── ChatTextField.swift         // Message input field
+│   │   ├── LoadingView.swift               // Loading indicator
+│   │   └── ErrorView.swift                 // Error display
 │   │
-│   ├── Styles/
-│   │   ├── Colors.swift
-│   │   ├── Typography.swift
-│   │   └── ViewModifiers.swift
-│   │
-│   └── Resources/
-│       ├── Assets.xcassets/
-│       │   ├── AppIcon.appiconset/
-│       │   ├── Colors.xcassets/
-│       │   └── Images.xcassets/
-│       └── Localizable.strings
+│   └── Styles/
+│       ├── Colors.swift                    // Color definitions
+│       └── Typography.swift                // Text styles
+│
+├── Resources/
+│   ├── Assets.xcassets/                    // Image and color assets
+│   │   ├── AppIcon.appiconset/            // App icons
+│   │   ├── Colors.xcassets/               // Color sets
+│   │   └── Images.xcassets/               // Image assets
+│   ├── UniMate.xcdatamodeld/              // CoreData schema
+│   └── Localizable.strings                // Localized strings
 │
 └── Configuration/
-    ├── Info.plist
-    ├── AppConfiguration.swift
-    └── Debug.xcconfig
+    ├── Info.plist                         // App configuration
+    ├── AppConfiguration.swift             // Environment configuration
+    └── GoogleService-Info.plist           // Firebase configuration
 ```
