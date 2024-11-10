@@ -113,7 +113,7 @@ HKUConnect - iOS Application Project Overview
 ```
 UniMate/
 ├── App/
-│   ├── UniMateApp.swift          // App entry, manages HKU email verification flow
+│   ├── UniMateApp.swift          // App entry point
 │   └── AppDelegate.swift         // App lifecycle management
 │
 ├── Features/
@@ -156,35 +156,21 @@ UniMate/
 │   │       ├── Message.swift             // Message with edit/delete
 │   │       └── ChatRoom.swift            // Chat room with storage info
 │   │
-│   ├── Forum/
-│   │   ├── Views/
-│   │   │   ├── ForumListView.swift      // Latest and trending posts
-│   │   │   ├── CategoryView.swift       // 5 main categories view
-│   │   │   └── PostDetailView.swift     // Post with media, likes, comments
-│   │   ├── ViewModels/
-│   │   │   └── ForumViewModel.swift      // Posts and engagement management
-│   │   └── Models/
-│   │       ├── Post.swift                // Post with multi-category support
-│   │       └── Comment.swift             // Comment structure
-│   │
-│   └── AR/
+│   └── Forum/
 │       ├── Views/
-│       │   └── ARMessageView.swift      // AR campus message viewer
+│       │   ├── ForumListView.swift      // Latest and trending posts
+│       │   ├── CategoryView.swift       // 5 main categories view
+│       │   └── PostDetailView.swift     // Post with media, likes, comments
 │       ├── ViewModels/
-│       │   └── ARViewModel.swift         // AR message management
+│       │   └── ForumViewModel.swift      // Posts and engagement management
 │       └── Models/
-│           └── ARMessage.swift           // Virtual message structure
+│           ├── Post.swift                // Post with multi-category support
+│           └── Comment.swift             // Comment structure
 │
 ├── Core/
 │   ├── Location/
 │   │   ├── LocationManager.swift        // 400m radius tracking
 │   │   └── LocationPermission.swift     // Location authorization
-│   │
-│   ├── Persistence/
-│   │   ├── Persistence.swift            // Auto-generated Core Data stack
-│   │   ├── PersistenceController.swift  // Our custom Core Data operations
-│   │   └── UniMate.xcdatamodeld/       // Core Data model
-│   │       └── UniMate.xcdatamodel     // Data model definition
 │   │
 │   ├── Extensions/
 │   │   └── String+TagValidation.swift   // Tag formatting rules
@@ -195,8 +181,10 @@ UniMate/
 │
 ├── UI/
 │   └── Components/
-│       ├── MediaPicker.swift            // Camera and photo picker
-│       └── TagInput.swift               // Tag creation with rules
+│       ├── ImagePicker.swift            // Profile picture & media attachment selector
+│       ├── TagInput.swift               // Tag creation and management
+│       ├── LoadingView.swift            // Loading indicator
+│       └── EmptyStateView.swift         // Empty state handling
 │
 └── Resources/
     ├── Persistence.swift                // Auto-generated Core Data file
