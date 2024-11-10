@@ -172,6 +172,11 @@ UniMate/
 │   │   ├── StorageService.swift         // Firebase Storage operations
 │   │   └── ImageService.swift           // Image loading and caching
 │   │
+│   ├── Persistence/
+│   │   ├── Persistence.swift            // Core Data stack and setup
+│   │   ├── PersistenceController.swift  // Manages Core Data operations
+│   │   └── UniMate.xcdatamodeld         // Core Data model file
+│   │
 │   ├── Extensions/
 │   │   ├── Color+Extension.swift        // Custom color definitions
 │   │   ├── Date+Extension.swift         // Date formatting utilities
