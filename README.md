@@ -180,16 +180,21 @@ UniMate/
 │       └── NotificationManager.swift     // Local notifications handling
 │
 ├── UI/
+│   ├── Theme/
+│   │   └── AppTheme.swift              // Global app styling
+│   │
 │   └── Components/
+│       ├── CommonButton.swift           // Reusable button styles
+│       ├── CommonTextField.swift        // Reusable text field
 │       ├── ImagePicker.swift            // Profile picture & media attachment selector
-│       ├── TagInput.swift               // Tag creation and management
-│       ├── LoadingView.swift            // Loading indicator
-│       └── EmptyStateView.swift         // Empty state handling
+│       ├── TagInput.swift              // Tag creation and management
+│       ├── LoadingView.swift           // Loading indicator
+│       └── EmptyStateView.swift        // Empty state handling
 │
 └── Resources/
     ├── Persistence.swift                // Auto-generated Core Data file
     ├── UniMate.xcdatamodeld/           // Auto-generated Core Data model
     │   └── UniMate.xcdatamodel         // Data model definition
-    ├── Info.plist                       // App configuration
-    └── Assets.xcassets                  // App assets
+    ├── Info.plist                      // App configuration
+    └── Assets.xcassets                 // App assets
 ```
