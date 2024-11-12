@@ -1,4 +1,4 @@
-HKUConnect - iOS Application Project Overview
+UniMate - iOS Application Project Overview
 1. Core Features
 - Authentication System
   - HKU Email Domain (@connect.hku.hk) verification
