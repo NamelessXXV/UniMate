@@ -197,4 +197,5 @@ UniMate/
     │   └── UniMate.xcdatamodel         // Data model definition
     ├── Info.plist                      // App configuration
     └── Assets.xcassets                 // App assets
+    └── GoogleService-Info.plist
 ```
