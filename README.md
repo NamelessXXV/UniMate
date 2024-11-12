@@ -112,90 +112,42 @@ UniMate - iOS Application Project Overview
 
 ```
 UniMate/
-├── App/
-│   ├── UniMateApp.swift          // App entry point
-│   └── AppDelegate.swift         // App lifecycle management
-│
 ├── Features/
-│   ├── Authentication/
+│   ├── Forum/
+│   │   ├── Models/
+│   │   │   ├── Post.swift
+│   │   │   ├── Comment.swift
+│   │   │   └── ForumUser.swift (renamed from User.swift to avoid conflicts)
+│   │   │
 │   │   ├── Views/
-│   │   │   ├── LoginView.swift         // Login with Face ID/Password
-│   │   │   ├── ResetPasswordView.swift  // Password reset via email
-│   │   │   └── EmailVerificationView.swift // HKU email verification
+│   │   │   ├── ForumView.swift
+│   │   │   ├── PostRowView.swift
+│   │   │   ├── PostDetailView.swift
+│   │   │   ├── NewPostView.swift
+│   │   │   ├── SearchAndFilterBar.swift
+│   │   │   ├── CategoryChip.swift
+│   │   │   ├── CommentView.swift
+│   │   │   └── PostHeaderView.swift
+│   │   │
 │   │   ├── ViewModels/
-│   │   │   └── AuthViewModel.swift      // Auth logic for HKU domain
-│   │   └── Models/
-│   │       └── User.swift               // User with HKU specific fields
+│   │   │   ├── ForumViewModel.swift
+│   │   │   ├── PostDetailViewModel.swift
+│   │   │   └── NewPostViewModel.swift
+│   │   │
+│   │   └── Services/
+│   │       ├── ForumService.swift
+│   │       └── ImageUploadService.swift
 │   │
-│   ├── Profile/
-│   │   ├── Views/
-│   │   │   ├── ProfileView.swift        // Shows username, picture, academic status
-│   │   │   └── EditProfileView.swift    // Edit profile and tags (max 6)
-│   │   ├── ViewModels/
-│   │   │   └── ProfileViewModel.swift    // Profile and tags management
-│   │   └── Models/
-│   │       └── Profile.swift             // Profile with tags structure
-│   │
-│   ├── Match/
-│   │   ├── Views/
-│   │   │   ├── NearbyUsersView.swift    // 400m radius user display
-│   │   │   └── UserDetailView.swift     // Show user tags and connection option
-│   │   ├── ViewModels/
-│   │   │   └── MatchViewModel.swift      // Nearby users and connection logic
-│   │   └── Models/
-│   │       └── Connection.swift          // Connection request structure
-│   │
-│   ├── Chat/
-│   │   ├── Views/
-│   │   │   ├── ChatListView.swift       // Individual and group chats (max 15)
-│   │   │   ├── ChatDetailView.swift     // Chat with media support
-│   │   │   └── StorageView.swift        // Shows chat storage usage
-│   │   ├── ViewModels/
-│   │   │   └── ChatViewModel.swift       // Local chat management
-│   │   └── Models/
-│   │       ├── Message.swift             // Message with edit/delete
-│   │       └── ChatRoom.swift            // Chat room with storage info
-│   │
-│   └── Forum/
-│       ├── Views/
-│       │   ├── ForumListView.swift      // Latest and trending posts
-│       │   ├── CategoryView.swift       // 5 main categories view
-│       │   └── PostDetailView.swift     // Post with media, likes, comments
-│       ├── ViewModels/
-│       │   └── ForumViewModel.swift      // Posts and engagement management
-│       └── Models/
-│           ├── Post.swift                // Post with multi-category support
-│           └── Comment.swift             // Comment structure
+│   └── ... (other existing features)
 │
-├── Core/
-│   ├── Location/
-│   │   ├── LocationManager.swift        // 400m radius tracking
-│   │   └── LocationPermission.swift     // Location authorization
+├── Shared/
+│   ├── Components/
+│   │   └── ImagePicker.swift (if not already existing)
 │   │
-│   ├── Extensions/
-│   │   └── String+TagValidation.swift   // Tag formatting rules
-│   │
-│   └── Utilities/
-│       ├── StorageCalculator.swift      // Chat storage size calculation
-│       └── NotificationManager.swift     // Local notifications handling
+│   └── Extensions/
+│       ├── Date+Extensions.swift (if not already existing)
+│       ├── UIImage+Extensions.swift (if not already existing)
+│       └── View+Extensions.swift (if not already existing)
 │
-├── UI/
-│   ├── Theme/
-│   │   └── AppTheme.swift              // Global app styling
-│   │
-│   └── Components/
-│       ├── CommonButton.swift           // Reusable button styles
-│       ├── CommonTextField.swift        // Reusable text field
-│       ├── ImagePicker.swift            // Profile picture & media attachment selector
-│       ├── TagInput.swift              // Tag creation and management
-│       ├── LoadingView.swift           // Loading indicator
-│       └── EmptyStateView.swift        // Empty state handling
-│
-└── Resources/
-    ├── Persistence.swift                // Auto-generated Core Data file
-    ├── UniMate.xcdatamodeld/           // Auto-generated Core Data model
-    │   └── UniMate.xcdatamodel         // Data model definition
-    ├── Info.plist                      // App configuration
-    └── Assets.xcassets                 // App assets
-    └── GoogleService-Info.plist
+└── ... (rest of your existing UniMate project structure)
 ```
