@@ -1,71 +1,56 @@
+// ViewModels/AuthViewModel.swift
 import Foundation
 import FirebaseAuth
-import LocalAuthentication
 
-class AuthManager: ObservableObject {
+@MainActor
+class AuthViewModel: ObservableObject {
     @Published var isAuthenticated = false
-    @Published var errorMessage = ""
+    @Published var currentUser: User?
+    @Published var errorMessage: String?
     
-    func validateEmail(_ email: String) -> Bool {
-        return email.hasSuffix("@connect.hku.hk")
+    private let service = FirebaseService.shared
+    
+    init() {
+        // Check if user is already signed in
+        if Auth.auth().currentUser != nil {
+            isAuthenticated = true
+        }
     }
     
-    func register(email: String, password: String) {
-        guard validateEmail(email) else {
-            errorMessage = "Please use your @connect.hku.hk email"
-            return
-        }
-        
-        Auth.auth().createUser(withEmail: email, password: password) { [weak self] result, error in
-            if let error = error {
-                self?.errorMessage = error.localizedDescription
-                return
+    func signIn(email: String, password: String) {
+        Task {
+            do {
+                let user = try await service.signIn(email: email, password: password)
+                self.currentUser = user
+                self.isAuthenticated = true
+                self.errorMessage = nil
+            } catch {
+                self.errorMessage = error.localizedDescription
             }
-            self?.isAuthenticated = true
-            UserDefaults.standard.set(email, forKey: "userEmail")
         }
     }
     
-    func login(email: String, password: String) {
-        Auth.auth().signIn(withEmail: email, password: password) { [weak self] result, error in
-            if let error = error {
-                self?.errorMessage = error.localizedDescription
-                return
-            }
-            self?.isAuthenticated = true
-            UserDefaults.standard.set(email, forKey: "userEmail")
-        }
-    }
-    
-    func authenticateWithFaceID() {
-        let context = LAContext()
-        var error: NSError?
-        
-        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
-            errorMessage = "Face ID not available"
-            return
-        }
-        
-        context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics,
-                             localizedReason: "Log in with Face ID") { [weak self] success, error in
-            DispatchQueue.main.async {
-                if success {
-                    if let email = UserDefaults.standard.string(forKey: "userEmail") {
-                        self?.isAuthenticated = true
-                    }
-                } else {
-                    self?.errorMessage = "Face ID authentication failed"
-                }
+    func signUp(email: String, password: String, username: String) {
+        Task {
+            do {
+                let user = try await service.signUp(email: email, password: password, username: username)
+                self.currentUser = user
+                self.isAuthenticated = true
+                self.errorMessage = nil
+            } catch {
+                self.errorMessage = error.localizedDescription
             }
         }
     }
     
     func signOut() {
         do {
-            try Auth.auth().signOut()
-            isAuthenticated = false
+            try service.signOut()
+            self.isAuthenticated = false
+            self.currentUser = nil
+            self.errorMessage = nil
         } catch {
-            errorMessage = "Error signing out"
+            self.errorMessage = error.localizedDescription
         }
     }
 }

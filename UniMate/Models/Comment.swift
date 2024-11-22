@@ -1,17 +1,17 @@
-// Models/Post.swift
+// Models/Comment.swift
 import Foundation
 
-struct Post: Codable, Identifiable {
+struct Comment: Codable, Identifiable {
     let id: String
+    let postId: String
     let authorId: String
-    let title: String
     let content: String
     let timestamp: Date
     
     enum CodingKeys: String, CodingKey {
         case id
+        case postId
         case authorId
-        case title
         case content
         case timestamp
     }

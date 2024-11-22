@@ -1,20 +1,19 @@
-//
-//  UniMateApp.swift
-//  UniMate
-//
-//  Created by Davis Wu on 21/11/2024.
-//
-
+// UniMateApp.swift
 import SwiftUI
+import FirebaseCore
 
 @main
 struct UniMateApp: App {
-    let persistenceController = PersistenceController.shared
-
+    @StateObject private var authViewModel = AuthViewModel()
+    
+    init() {
+        FirebaseApp.configure()
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                .environmentObject(authViewModel)
         }
     }
 }

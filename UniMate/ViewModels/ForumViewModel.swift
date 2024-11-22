@@ -1,72 +1,143 @@
-import SwiftUI
+// ViewModels/ForumViewModel.swift
+import Foundation
 
-struct AuthView: View {
-    @StateObject private var authManager = AuthManager()
-    @State private var email = ""
-    @State private var password = ""
-    @State private var isRegistering = false
+@MainActor
+class ForumViewModel: ObservableObject {
+    @Published var posts: [Post] = []
+    @Published var comments: [String: [Comment]] = [:] // postId: [Comments]
+    @Published var likesCount: [String: Int] = [:] // postId: count
+    @Published var likedPosts: Set<String> = [] // Set of postIds liked by current user
+    @Published var errorMessage: String?
+    @Published var isLoading = false
     
-    var body: some View {
-        if authManager.isAuthenticated {
-            HomeView(authManager: authManager)
-        } else {
-            NavigationView {
-                VStack(spacing: 20) {
-                    Text("UniMate")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
-                    TextField("Email (@connect.hku.hk)", text: $email)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .autocapitalization(.none)
-                        .keyboardType(.emailAddress)
-                    
-                    SecureField("Password", text: $password)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    
-                    if !authManager.errorMessage.isEmpty {
-                        Text(authManager.errorMessage)
-                            .foregroundColor(.red)
-                            .font(.caption)
-                    }
-                    
-                    Button(action: {
-                        if isRegistering {
-                            authManager.register(email: email, password: password)
-                        } else {
-                            authManager.login(email: email, password: password)
-                        }
-                    }) {
-                        Text(isRegistering ? "Register" : "Login")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                    }
-                    
-                    if !isRegistering {
-                        Button(action: {
-                            authManager.authenticateWithFaceID()
-                        }) {
-                            Text("Login with Face ID")
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.green)
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
-                        }
-                    }
-                    
-                    Button(action: {
-                        isRegistering.toggle()
-                    }) {
-                        Text(isRegistering ? "Already have an account? Login" : "New user? Register")
-                            .foregroundColor(.blue)
-                    }
-                }
-                .padding()
+    private let service = FirebaseService.shared
+    
+    func fetchPosts() async {
+        isLoading = true
+        do {
+            self.posts = try await service.fetchPosts()
+            await updateLikesInfo()
+            self.errorMessage = nil
+        } catch {
+            self.errorMessage = error.localizedDescription
+        }
+        isLoading = false
+    }
+    
+    private func updateLikesInfo() async {
+        for post in posts {
+            await fetchLikesCount(for: post.id)
+        }
+    }
+    
+    func createPost(title: String, content: String, userId: String) async {
+        do {
+            try await service.createPost(title: title, content: content, userId: userId)
+            await fetchPosts()
+            self.errorMessage = nil
+        } catch {
+            self.errorMessage = error.localizedDescription
+        }
+    }
+    
+    func deletePost(postId: String) async {
+        do {
+            try await service.deletePost(postId: postId)
+            await fetchPosts()
+            self.errorMessage = nil
+        } catch {
+            self.errorMessage = error.localizedDescription
+        }
+    }
+    
+    func updatePost(postId: String, title: String, content: String) async {
+        do {
+            try await service.updatePost(postId: postId, title: title, content: content)
+            await fetchPosts()
+            self.errorMessage = nil
+        } catch {
+            self.errorMessage = error.localizedDescription
+        }
+    }
+    
+    // MARK: - Likes Management
+    func toggleLike(postId: String, userId: String) async {
+        do {
+            let isLiked = try await service.isPostLikedByUser(postId: postId, userId: userId)
+            if isLiked {
+                try await service.unlikePost(postId: postId, userId: userId)
+                likedPosts.remove(postId)
+            } else {
+                try await service.likePost(postId: postId, userId: userId)
+                likedPosts.insert(postId)
             }
+            await fetchLikesCount(for: postId)
+            self.errorMessage = nil
+        } catch {
+            self.errorMessage = error.localizedDescription
+        }
+    }
+    
+    func fetchLikesCount(for postId: String) async {
+        do {
+            let count = try await service.getLikesCount(postId: postId)
+            likesCount[postId] = count
+        } catch {
+            print("Error fetching likes count: \(error.localizedDescription)")
+        }
+    }
+    
+    func checkIfLiked(postId: String, userId: String) async {
+        do {
+            let isLiked = try await service.isPostLikedByUser(postId: postId, userId: userId)
+            if isLiked {
+                likedPosts.insert(postId)
+            } else {
+                likedPosts.remove(postId)
+            }
+        } catch {
+            print("Error checking like status: \(error.localizedDescription)")
+        }
+    }
+    
+    // MARK: - Comments Management
+    func fetchComments(for postId: String) async {
+        do {
+            let fetchedComments = try await service.fetchComments(postId: postId)
+            comments[postId] = fetchedComments
+            self.errorMessage = nil
+        } catch {
+            self.errorMessage = error.localizedDescription
+        }
+    }
+    
+    func addComment(postId: String, userId: String, content: String) async {
+        do {
+            try await service.addComment(postId: postId, userId: userId, content: content)
+            await fetchComments(for: postId)
+            self.errorMessage = nil
+        } catch {
+            self.errorMessage = error.localizedDescription
+        }
+    }
+    
+    func deleteComment(postId: String, commentId: String) async {
+        do {
+            try await service.deleteComment(postId: postId, commentId: commentId)
+            await fetchComments(for: postId)
+            self.errorMessage = nil
+        } catch {
+            self.errorMessage = error.localizedDescription
+        }
+    }
+    
+    func updateComment(postId: String, commentId: String, content: String) async {
+        do {
+            try await service.updateComment(postId: postId, commentId: commentId, content: content)
+            await fetchComments(for: postId)
+            self.errorMessage = nil
+        } catch {
+            self.errorMessage = error.localizedDescription
         }
     }
 }
