@@ -7,19 +7,31 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		38FE531B2CEF7D020012C711 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 38FE531A2CEF7D020012C711 /* FirebaseAnalyticsWithoutAdIdSupport */; };
-		38FE531D2CEF7D020012C711 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 38FE531C2CEF7D020012C711 /* FirebaseAppCheck */; };
-		38FE531F2CEF7D5A0012C711 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 38FE531E2CEF7D5A0012C711 /* FirebaseAuth */; };
-		38FE53212CEF7D6D0012C711 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 38FE53202CEF7D6D0012C711 /* FirebaseFirestore */; };
+		66C8F6C12CF0851A00AAA66F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 66C8F6C02CF0851A00AAA66F /* FirebaseAuth */; };
+		66C8F6C32CF0851A00AAA66F /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 66C8F6C22CF0851A00AAA66F /* FirebaseDatabase */; };
+		66C8F6C52CF0851A00AAA66F /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 66C8F6C42CF0851A00AAA66F /* FirebaseFirestore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		5BBDAA322CEF440A0060C948 /* UniMate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UniMate.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		66C8F6BA2CF07FD000AAA66F /* Exceptions for "UniMate" folder in "UniMate" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 5BBDAA312CEF440A0060C948 /* UniMate */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		5BBDAA342CEF440A0060C948 /* UniMate */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				66C8F6BA2CF07FD000AAA66F /* Exceptions for "UniMate" folder in "UniMate" target */,
+			);
 			path = UniMate;
 			sourceTree = "<group>";
 		};
@@ -30,10 +42,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				38FE531D2CEF7D020012C711 /* FirebaseAppCheck in Frameworks */,
-				38FE53212CEF7D6D0012C711 /* FirebaseFirestore in Frameworks */,
-				38FE531F2CEF7D5A0012C711 /* FirebaseAuth in Frameworks */,
-				38FE531B2CEF7D020012C711 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */,
+				66C8F6C32CF0851A00AAA66F /* FirebaseDatabase in Frameworks */,
+				66C8F6C12CF0851A00AAA66F /* FirebaseAuth in Frameworks */,
+				66C8F6C52CF0851A00AAA66F /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -76,10 +87,9 @@
 			);
 			name = UniMate;
 			packageProductDependencies = (
-				38FE531A2CEF7D020012C711 /* FirebaseAnalyticsWithoutAdIdSupport */,
-				38FE531C2CEF7D020012C711 /* FirebaseAppCheck */,
-				38FE531E2CEF7D5A0012C711 /* FirebaseAuth */,
-				38FE53202CEF7D6D0012C711 /* FirebaseFirestore */,
+				66C8F6C02CF0851A00AAA66F /* FirebaseAuth */,
+				66C8F6C22CF0851A00AAA66F /* FirebaseDatabase */,
+				66C8F6C42CF0851A00AAA66F /* FirebaseFirestore */,
 			);
 			productName = UniMate;
 			productReference = 5BBDAA322CEF440A0060C948 /* UniMate.app */;
@@ -110,7 +120,7 @@
 			mainGroup = 5BBDAA292CEF440A0060C948;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				38FE53192CEF7D020012C711 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				66C8F6BF2CF0851A00AAA66F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5BBDAA332CEF440A0060C948 /* Products */;
@@ -273,6 +283,9 @@
 				DEVELOPMENT_TEAM = 2G9QD4D8XW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = UniMate/Info.plist;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We need your location to show you nearby users for matching.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to show you nearby users for matching.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -303,6 +316,9 @@
 				DEVELOPMENT_TEAM = 2G9QD4D8XW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = UniMate/Info.plist;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We need your location to show you nearby users for matching.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to show you nearby users for matching.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -346,7 +362,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		38FE53192CEF7D020012C711 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+		66C8F6BF2CF0851A00AAA66F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
 			requirement = {
@@ -357,24 +373,19 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		38FE531A2CEF7D020012C711 /* FirebaseAnalyticsWithoutAdIdSupport */ = {
+		66C8F6C02CF0851A00AAA66F /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 38FE53192CEF7D020012C711 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAnalyticsWithoutAdIdSupport;
-		};
-		38FE531C2CEF7D020012C711 /* FirebaseAppCheck */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 38FE53192CEF7D020012C711 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAppCheck;
-		};
-		38FE531E2CEF7D5A0012C711 /* FirebaseAuth */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 38FE53192CEF7D020012C711 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = 66C8F6BF2CF0851A00AAA66F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAuth;
 		};
-		38FE53202CEF7D6D0012C711 /* FirebaseFirestore */ = {
+		66C8F6C22CF0851A00AAA66F /* FirebaseDatabase */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 38FE53192CEF7D020012C711 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = 66C8F6BF2CF0851A00AAA66F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseDatabase;
+		};
+		66C8F6C42CF0851A00AAA66F /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 66C8F6BF2CF0851A00AAA66F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
 		};
 /* End XCSwiftPackageProductDependency section */
