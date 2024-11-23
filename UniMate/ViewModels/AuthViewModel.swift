@@ -1,6 +1,7 @@
 // ViewModels/AuthViewModel.swift
 import Foundation
 import FirebaseAuth
+import FirebaseFirestore
 
 @MainActor
 class AuthViewModel: ObservableObject {
@@ -9,11 +10,50 @@ class AuthViewModel: ObservableObject {
     @Published var errorMessage: String?
     
     private let service = FirebaseService.shared
+    private var authStateHandler: AuthStateDidChangeListenerHandle?
     
     init() {
-        // Check if user is already signed in
-        if Auth.auth().currentUser != nil {
-            isAuthenticated = true
+        setupAuthStateHandler()
+    }
+    
+    deinit {
+        if let handler = authStateHandler {
+            Auth.auth().removeStateDidChangeListener(handler)
+        }
+    }
+    
+    private func setupAuthStateHandler() {
+        authStateHandler = Auth.auth().addStateDidChangeListener { [weak self] _, firebaseUser in
+            guard let self = self else { return }
+            
+            if let firebaseUser = firebaseUser {
+                Task {
+                    do {
+                        // Fetch the user document from Firestore
+                        let db = Firestore.firestore()
+                        let userDoc = try await db.collection("users").document(firebaseUser.uid).getDocument()
+                        
+                        if let userData = userDoc.data() {
+                            self.currentUser = User(
+                                id: firebaseUser.uid,
+                                email: userData["email"] as? String ?? "",
+                                username: userData["username"] as? String ?? ""
+                            )
+                            self.isAuthenticated = true
+                        } else {
+                            self.isAuthenticated = false
+                            self.currentUser = nil
+                        }
+                    } catch {
+                        print("Error fetching user data: \(error.localizedDescription)")
+                        self.isAuthenticated = false
+                        self.currentUser = nil
+                    }
+                }
+            } else {
+                self.isAuthenticated = false
+                self.currentUser = nil
+            }
         }
     }
     

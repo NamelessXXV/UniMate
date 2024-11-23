@@ -9,13 +9,16 @@ import SwiftUI
 import MapKit
 
 struct MatchingView: View {
-    @StateObject private var viewModel = MatchingViewModel()
-    @StateObject private var locationService = LocationService()
+    @StateObject private var locationViewModel = LocationViewModel()
+    @StateObject private var matchingViewModel = MatchingViewModel()
     @Environment(\.presentationMode) var presentationMode
+    @Environment(\.scenePhase) var scenePhase
     
     var body: some View {
         ZStack {
-            Map(coordinateRegion: $viewModel.region, showsUserLocation: true, annotationItems: viewModel.activeUsers) { user in
+            Map(coordinateRegion: $matchingViewModel.region,
+                showsUserLocation: true,
+                annotationItems: locationViewModel.nearbyUsers) { user in
                 MapAnnotation(coordinate: user.location.clLocation) {
                     UserAnnotation(user: user)
                 }
@@ -41,18 +44,19 @@ struct MatchingView: View {
             }
         }
         .onAppear {
-            locationService.requestLocationPermission()
-            locationService.startUpdatingLocation()
-            viewModel.startObservingUsers()
+            locationViewModel.startLocationUpdates()
         }
         .onDisappear {
-            locationService.stopUpdatingLocation()
-            viewModel.stopObservingUsers()
+            locationViewModel.stopLocationUpdates()
         }
-        .onChange(of: locationService.currentLocation) { location in
+        .onChange(of: locationViewModel.currentLocation) { location in
             if let location = location {
-                viewModel.updateRegion(for: location)
+                // Update region through view model
+                matchingViewModel.updateRegion(for: location)
             }
+        }
+        .onChange(of: scenePhase) { newPhase in
+            locationViewModel.handleScenePhaseChange(newPhase)
         }
     }
 }

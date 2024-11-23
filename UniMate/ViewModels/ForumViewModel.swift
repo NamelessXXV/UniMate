@@ -1,4 +1,4 @@
-// ViewModels/ForumViewModel.swift
+// ForumViewModel.swift
 import Foundation
 
 @MainActor
@@ -7,16 +7,28 @@ class ForumViewModel: ObservableObject {
     @Published var comments: [String: [Comment]] = [:] // postId: [Comments]
     @Published var likesCount: [String: Int] = [:] // postId: count
     @Published var likedPosts: Set<String> = [] // Set of postIds liked by current user
+    @Published var usernames: [String: String] = [:] // userId: username
     @Published var errorMessage: String?
     @Published var isLoading = false
+    @Published var selectedPost: Post?
+    @Published var showingPostDetail = false
     
     private let service = FirebaseService.shared
     
+    // MARK: - Posts Management
     func fetchPosts() async {
         isLoading = true
         do {
             self.posts = try await service.fetchPosts()
             await updateLikesInfo()
+            
+            // Check like status for all posts if user is logged in
+            if let userId = try? await service.getCurrentUserId() {
+                await checkLikesForAllPosts(userId: userId)
+            }
+            
+            // Fetch usernames for all post authors
+            await fetchUsernamesForPosts()
             self.errorMessage = nil
         } catch {
             self.errorMessage = error.localizedDescription
@@ -25,8 +37,33 @@ class ForumViewModel: ObservableObject {
     }
     
     private func updateLikesInfo() async {
-        for post in posts {
-            await fetchLikesCount(for: post.id)
+        await withTaskGroup(of: Void.self) { group in
+            for post in posts {
+                group.addTask {
+                    await self.fetchLikesCount(for: post.id)
+                }
+            }
+        }
+    }
+    
+    private func checkLikesForAllPosts(userId: String) async {
+        await withTaskGroup(of: Void.self) { group in
+            for post in posts {
+                group.addTask {
+                    await self.checkIfLiked(postId: post.id, userId: userId)
+                }
+            }
+        }
+    }
+    
+    private func fetchUsernamesForPosts() async {
+        let uniqueUserIds = Set(posts.map { $0.authorId })
+        await withTaskGroup(of: Void.self) { group in
+            for userId in uniqueUserIds {
+                group.addTask {
+                    await self.fetchUsername(for: userId)
+                }
+            }
         }
     }
     
@@ -60,20 +97,56 @@ class ForumViewModel: ObservableObject {
         }
     }
     
+    // MARK: - Username Management
+    private func fetchUsername(for userId: String) async {
+        if usernames[userId] != nil { return }
+        
+        do {
+            let username = try await service.fetchUsername(userId: userId)
+            usernames[userId] = username
+        } catch {
+            print("Error fetching username: \(error.localizedDescription)")
+            usernames[userId] = "User"
+        }
+    }
+    
+    func getUsername(for userId: String) -> String {
+        return usernames[userId] ?? "User"
+    }
+    
     // MARK: - Likes Management
     func toggleLike(postId: String, userId: String) async {
         do {
-            let isLiked = try await service.isPostLikedByUser(postId: postId, userId: userId)
-            if isLiked {
-                try await service.unlikePost(postId: postId, userId: userId)
+            let wasLiked = likedPosts.contains(postId)
+            
+            // Optimistically update UI
+            if wasLiked {
                 likedPosts.remove(postId)
+                likesCount[postId] = (likesCount[postId] ?? 1) - 1
+            } else {
+                likedPosts.insert(postId)
+                likesCount[postId] = (likesCount[postId] ?? 0) + 1
+            }
+            
+            // Update backend
+            if wasLiked {
+                try await service.unlikePost(postId: postId, userId: userId)
             } else {
                 try await service.likePost(postId: postId, userId: userId)
-                likedPosts.insert(postId)
             }
+            
+            // Fetch actual count to ensure accuracy
             await fetchLikesCount(for: postId)
             self.errorMessage = nil
         } catch {
+            // Revert optimistic update if error occurs
+            if likedPosts.contains(postId) {
+                likedPosts.remove(postId)
+                likesCount[postId] = (likesCount[postId] ?? 1) - 1
+            } else {
+                likedPosts.insert(postId)
+                likesCount[postId] = (likesCount[postId] ?? 0) + 1
+            }
             self.errorMessage = error.localizedDescription
         }
     }
@@ -91,9 +164,9 @@ class ForumViewModel: ObservableObject {
         do {
             let isLiked = try await service.isPostLikedByUser(postId: postId, userId: userId)
             if isLiked {
-                likedPosts.insert(postId)
+                self.likedPosts.insert(postId)
             } else {
-                likedPosts.remove(postId)
+                self.likedPosts.remove(postId)
             }
         } catch {
             print("Error checking like status: \(error.localizedDescription)")
@@ -105,6 +178,17 @@ class ForumViewModel: ObservableObject {
         do {
             let fetchedComments = try await service.fetchComments(postId: postId)
             comments[postId] = fetchedComments
+            
+            // Fetch usernames for comment authors
+            let commentAuthorIds = Set(fetchedComments.map { $0.authorId })
+            await withTaskGroup(of: Void.self) { group in
+                for authorId in commentAuthorIds {
+                    group.addTask {
+                        await self.fetchUsername(for: authorId)
+                    }
+                }
+            }
+            
             self.errorMessage = nil
         } catch {
             self.errorMessage = error.localizedDescription
@@ -139,5 +223,16 @@ class ForumViewModel: ObservableObject {
         } catch {
             self.errorMessage = error.localizedDescription
         }
+    }
+    
+    // MARK: - Post Selection
+    func selectPost(_ post: Post) {
+        self.selectedPost = post
+        self.showingPostDetail = true
+    }
+    
+    func clearSelectedPost() {
+        self.selectedPost = nil
+        self.showingPostDetail = false
     }
 }

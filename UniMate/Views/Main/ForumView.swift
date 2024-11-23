@@ -17,42 +17,20 @@ struct ForumView: View {
                 if viewModel.isLoading {
                     ProgressView()
                 } else {
-                    List(viewModel.posts) { post in
-                        PostRowView(post: post, viewModel: viewModel) // Pass viewModel here
-                            .onTapGesture {
-                                selectedPost = post
-                                showingComments = true
-                            }
-                    }
-                    .refreshable {
-                        Task {
-                            await viewModel.fetchPosts()
-                        }
-                    }
+                    postsList
                 }
             }
             .navigationTitle("Forum")
             .toolbar {
-                Button("New Post") {
-                    showingNewPost = true
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    newPostButton
                 }
             }
             .sheet(isPresented: $showingNewPost) {
-                NewPostView(
-                    viewModel: viewModel,
-                    isPresented: $showingNewPost,
-                    title: $newPostTitle,
-                    content: $newPostContent
-                )
+                newPostSheet
             }
             .sheet(isPresented: $showingComments) {
-                if let post = selectedPost {
-                    CommentsView(
-                        viewModel: viewModel,
-                        post: post,
-                        isPresented: $showingComments
-                    )
-                }
+                commentsSheet
             }
         }
         .onAppear {
@@ -61,4 +39,67 @@ struct ForumView: View {
             }
         }
     }
+    
+    private var postsList: some View {
+        ScrollView {
+            LazyVStack(spacing: 1) {
+                ForEach(viewModel.posts) { post in
+                    PostRowView(post: post, viewModel: viewModel)
+                        .padding(.vertical, 1)
+                        .background(Color(UIColor.systemBackground))
+                }
+            }
+            .background(Color(UIColor.systemGray5))
+        }
+        .refreshable {
+            Task {
+                await viewModel.fetchPosts()
+            }
+        }
+        .background(Color(UIColor.systemGray6))
+    }
+    
+    private var newPostButton: some View {
+        Button("New Post") {
+            showingNewPost = true
+        }
+    }
+    
+    private var newPostSheet: some View {
+        NewPostView(
+            viewModel: viewModel,
+            isPresented: $showingNewPost,
+            title: $newPostTitle,
+            content: $newPostContent
+        )
+    }
+    
+    private var commentsSheet: some View {
+        Group {
+            if let post = selectedPost {
+                if #available(iOS 16.0, *) {
+                    NavigationStack {
+                        CommentsView(
+                            viewModel: viewModel,
+                            post: post,
+                            isPresented: $showingComments
+                        )
+                    }
+                } else {
+                    NavigationView {
+                        CommentsView(
+                            viewModel: viewModel,
+                            post: post,
+                            isPresented: $showingComments
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+#Preview {
+    ForumView()
+        .environmentObject(AuthViewModel())
 }

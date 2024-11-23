@@ -10,10 +10,12 @@
 		66C8F6C12CF0851A00AAA66F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 66C8F6C02CF0851A00AAA66F /* FirebaseAuth */; };
 		66C8F6C32CF0851A00AAA66F /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 66C8F6C22CF0851A00AAA66F /* FirebaseDatabase */; };
 		66C8F6C52CF0851A00AAA66F /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 66C8F6C42CF0851A00AAA66F /* FirebaseFirestore */; };
+		66C8F73A2CF1EC6F00AAA66F /* TestPlan.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = 66C8F7392CF1EC6F00AAA66F /* TestPlan.xctestplan */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		5BBDAA322CEF440A0060C948 /* UniMate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UniMate.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		66C8F7392CF1EC6F00AAA66F /* TestPlan.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = TestPlan.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -54,6 +56,7 @@
 		5BBDAA292CEF440A0060C948 = {
 			isa = PBXGroup;
 			children = (
+				66C8F7392CF1EC6F00AAA66F /* TestPlan.xctestplan */,
 				5BBDAA342CEF440A0060C948 /* UniMate */,
 				5BBDAA332CEF440A0060C948 /* Products */,
 			);
@@ -137,6 +140,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66C8F73A2CF1EC6F00AAA66F /* TestPlan.xctestplan in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

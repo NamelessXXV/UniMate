@@ -10,74 +10,98 @@ import FirebaseAuth
 import CoreLocation
 
 class LocationViewModel: NSObject, ObservableObject {
-    private let ref = Database.database(url: "https://unimate-demo-default-rtdb.asia-southeast1.firebasedatabase.app").reference()
-    private let locationManager = CLLocationManager()
     @Published var currentLocation: CLLocation?
     @Published var nearbyUsers: [UserLocation] = []
     
+    private let locationManager = CLLocationManager()
+    private let database: Database
+    private let ref: DatabaseReference
+    private var updateTimer: Timer?
+    private var scanTimer: Timer?
+    private let updateInterval: TimeInterval = 10 // 10 seconds
+    
     override init() {
+        database = Database.database(url: "https://unimate-demo-default-rtdb.asia-southeast1.firebasedatabase.app")
+        ref = database.reference()
+        
         super.init()
+        
         setupLocationManager()
-        observeNearbyUsers()
     }
     
     private func setupLocationManager() {
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.requestWhenInUseAuthorization()
-        locationManager.startUpdatingLocation()
     }
     
-    func updateLocation(_ location: CLLocation) {
-        guard let userId = Auth.auth().currentUser?.uid else { return }
-        
-        let locationData: [String: Any] = [
-            "location": [
-                "latitude": location.coordinate.latitude,
-                "longitude": location.coordinate.longitude
-            ],
-            "lastUpdated": ServerValue.timestamp(),
-            "isActive": true,
-            "username": Auth.auth().currentUser?.displayName ?? "Unknown"
-        ]
-        
-        ref.child("live_locations").child(userId).setValue(locationData)
+    func startLocationUpdates() {
+        // Get initial location once
+        locationManager.requestLocation()
+        startPeriodicUpdates()
     }
     
-    private func observeNearbyUsers() {
-        let locationsRef = ref.child("live_locations") 
-        locationsRef.removeAllObservers()
-        
-        locationsRef.getData { [weak self] error, snapshot in
+    private func startPeriodicUpdates() {
+        // Start timer for updating timestamp in Firebase
+        updateTimer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { [weak self] _ in
             guard let self = self,
-                  let snapshot = snapshot,
-                  let locationsDict = snapshot.value as? [String: [String: Any]] else {
-                print("Error fetching data: \(error?.localizedDescription ?? "Unknown error")")
-                return
-            }
+                  let location = self.currentLocation else { return }
+            self.updateLocation(location, timestampOnly: true)
+        }
+        
+        // Start timer for scanning other users
+        scanTimer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { [weak self] _ in
+            self?.scanNearbyUsers()
+        }
+        
+        // Initial scan
+        scanNearbyUsers()
+    }
+    
+    func stopLocationUpdates() {
+        locationManager.stopUpdatingLocation()
+        updateTimer?.invalidate()
+        updateTimer = nil
+        scanTimer?.invalidate()
+        scanTimer = nil
+        stopObservingNearbyUsers()
+        
+        // Mark user as inactive when stopping
+        if let userId = Auth.auth().currentUser?.uid {
+            ref.child("live_locations").child(userId).updateChildValues(["isActive": false])
+        }
+    }
+    
+    private func scanNearbyUsers() {
+        ref.child("live_locations").observeSingleEvent(of: .value) { [weak self] snapshot in
+            guard let self = self,
+                  let locationsDict = snapshot.value as? [String: [String: Any]] else { return }
             
-            let users = locationsDict.compactMap { (userId, data) -> UserLocation? in
-                guard userId != Auth.auth().currentUser?.uid,
-                      let lat = data["latitude"] as? Double,
-                      let lon = data["longitude"] as? Double,
-                      let username = data["username"] as? String,
-                      let lastUpdatedTimestamp = data["lastUpdated"] as? TimeInterval,
-                      let isActive = data["isActive"] as? Bool else {
+            let currentTime = Date().timeIntervalSince1970 * 1000
+            let users = locationsDict.compactMap { (userId, userData) -> UserLocation? in
+                guard let locationData = userData["location"] as? [String: Any],
+                      let lat = locationData["latitude"] as? Double,
+                      let lon = locationData["longitude"] as? Double,
+                      let username = userData["username"] as? String,
+                      let lastUpdatedTimestamp = userData["lastUpdated"] as? TimeInterval,
+                      let isActive = userData["isActive"] as? Bool else {
                     return nil
                 }
                 
-                let photoURL = data["photoURL"] as? String
-                let lastUpdated = Date(timeIntervalSince1970: lastUpdatedTimestamp / 1000)
+                // Filter out inactive or stale locations (older than 30 seconds)
+                if !isActive || (currentTime - lastUpdatedTimestamp > 15000) {
+                    return nil
+                }
                 
                 return UserLocation(
                     id: userId,
                     username: username,
-                    photoURL: photoURL,
+                    photoURL: userData["photoURL"] as? String,
                     location: UserLocation.LocationCoordinate(
                         latitude: lat,
                         longitude: lon
                     ),
-                    lastUpdated: lastUpdated,
+                    lastUpdated: Date(timeIntervalSince1970: lastUpdatedTimestamp / 1000),
                     isActive: isActive
                 )
             }
@@ -87,25 +111,65 @@ class LocationViewModel: NSObject, ObservableObject {
             }
         }
     }
+    
+    private func stopObservingNearbyUsers() {
+        ref.child("live_locations").removeAllObservers()
+    }
+    
+    private func updateLocation(_ location: CLLocation, timestampOnly: Bool = false) {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        
+        var locationData: [String: Any] = [
+            "lastUpdated": ServerValue.timestamp(),
+            "isActive": true
+        ]
+        
+        // Only include location data if not timestamp-only update
+        if !timestampOnly {
+            locationData["location"] = [
+                "latitude": location.coordinate.latitude,
+                "longitude": location.coordinate.longitude
+            ]
+            locationData["username"] = Auth.auth().currentUser?.displayName ?? "User"
+        }
+        
+        ref.child("live_locations").child(userId).updateChildValues(locationData)
+    }
+    
+    func handleScenePhaseChange(_ phase: ScenePhase) {
+        switch phase {
+        case .active:
+            startLocationUpdates()
+        case .background, .inactive:
+            stopLocationUpdates()
+        @unknown default:
+            break
+        }
+    }
+    
+    deinit {
+        stopLocationUpdates()
+    }
 }
 
 extension LocationViewModel: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
-        DispatchQueue.main.async {
-            self.currentLocation = location
-            self.updateLocation(location)
-        }
+        currentLocation = location
+        updateLocation(location)
+        
+        // Stop updating location after getting initial location
+        manager.stopUpdatingLocation()
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Location error: \(error.localizedDescription)")
+        print("Location update failed: \(error.localizedDescription)")
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         switch manager.authorizationStatus {
         case .authorizedWhenInUse, .authorizedAlways:
-            manager.startUpdatingLocation()
+            manager.requestLocation()
         case .denied, .restricted:
             print("Location access denied")
         case .notDetermined:

@@ -1,3 +1,4 @@
+// FirebaseService.swift
 import Firebase
 import FirebaseAuth
 import FirebaseFirestore
@@ -80,6 +81,16 @@ class FirebaseService {
             "email": user.email,
             "username": user.username
         ])
+    }
+    
+    func fetchUsername(userId: String) async throws -> String {
+        let document = try await db.collection("users").document(userId).getDocument()
+        guard let data = document.data(),
+              let username = data["username"] as? String else {
+            throw NSError(domain: "FirebaseService", code: 400,
+                         userInfo: [NSLocalizedDescriptionKey: "Username not found"])
+        }
+        return username
     }
     
     // MARK: - Post Methods
@@ -282,4 +293,9 @@ class FirebaseService {
                 "timestamp": Timestamp(date: Date())
             ])
     }
+    
+    func getCurrentUserId() -> String? {
+        return Auth.auth().currentUser?.uid
+    }
+    
 }
