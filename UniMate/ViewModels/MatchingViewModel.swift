@@ -6,6 +6,7 @@
 //
 
 import Firebase
+import FirebaseDatabase
 import CoreLocation
 import MapKit
 
@@ -16,9 +17,9 @@ class MatchingViewModel: ObservableObject {
         span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
     )
     
-    private let database = Database.database().reference()
+    private let database = Database.database(url: "https://unimate-demo-default-rtdb.asia-southeast1.firebasedatabase.app").reference()
     private var usersHandle: DatabaseHandle?
-    
+
     func startObservingUsers() {
         usersHandle = database.child("live_locations").observe(.value) { [weak self] snapshot in
             guard let self = self else { return }
@@ -33,7 +34,7 @@ class MatchingViewModel: ObservableObject {
                 }
                 
                 // Filter out inactive users and old locations (older than 15 seconds)
-                if user.isActive && currentTime - user.lastUpdated.timeIntervalSince1970 * 1000 <= 15000 {
+                if user.isActive && currentTime - user.lastUpdated.timeIntervalSince1970 * 1000 <= 60000 {
                     users.append(user)
                 }
             }

@@ -13,7 +13,7 @@ import SwiftUI
 
 class LocationService: NSObject, ObservableObject {
     private let locationManager: CLLocationManager
-    private let database = Database.database().reference()
+    private let database = Database.database(url: "https://unimate-demo-default-rtdb.asia-southeast1.firebasedatabase.app").reference()
     private var locationTimer: Timer?
     
     @Published var currentLocation: CLLocation?

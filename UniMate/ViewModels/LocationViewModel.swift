@@ -10,7 +10,7 @@ import FirebaseAuth
 import CoreLocation
 
 class LocationViewModel: NSObject, ObservableObject {
-    private let ref = Database.database().reference()
+    private let ref = Database.database(url: "https://unimate-demo-default-rtdb.asia-southeast1.firebasedatabase.app").reference()
     private let locationManager = CLLocationManager()
     @Published var currentLocation: CLLocation?
     @Published var nearbyUsers: [UserLocation] = []
@@ -32,18 +32,20 @@ class LocationViewModel: NSObject, ObservableObject {
         guard let userId = Auth.auth().currentUser?.uid else { return }
         
         let locationData: [String: Any] = [
-            "latitude": location.coordinate.latitude,
-            "longitude": location.coordinate.longitude,
+            "location": [
+                "latitude": location.coordinate.latitude,
+                "longitude": location.coordinate.longitude
+            ],
             "lastUpdated": ServerValue.timestamp(),
             "isActive": true,
             "username": Auth.auth().currentUser?.displayName ?? "Unknown"
         ]
         
-        ref.child("locations").child(userId).setValue(locationData)
+        ref.child("live_locations").child(userId).setValue(locationData)
     }
     
     private func observeNearbyUsers() {
-        let locationsRef = ref.child("locations")
+        let locationsRef = ref.child("live_locations") 
         locationsRef.removeAllObservers()
         
         locationsRef.getData { [weak self] error, snapshot in
