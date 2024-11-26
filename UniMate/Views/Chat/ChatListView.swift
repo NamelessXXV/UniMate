@@ -14,13 +14,32 @@ struct ChatListView: View {
     
     var body: some View {
         NavigationView {
-            List(viewModel.chatPreviews) { preview in
-                NavigationLink(destination: ChatView(currentUserId: viewModel.currentUserId, otherUserId: preview.otherUserId)) {
-                    ChatPreviewRow(preview: preview)
+            Group {
+                if viewModel.chatPreviews.isEmpty {
+                    VStack(spacing: 16) {
+                        Text("No chats yet")
+                            .font(.headline)
+                        if let error = viewModel.error {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                                .multilineTextAlignment(.center)
+                                .padding()
+                        }
+                    }
+                } else {
+                    List(viewModel.chatPreviews) { preview in
+                        NavigationLink(destination: ChatView(currentUserId: viewModel.currentUserId, otherUserId: preview.otherUserId)) {
+                            ChatPreviewRow(preview: preview)
+                        }
+                    }
                 }
             }
             .navigationTitle("Chats")
             .refreshable {
+                viewModel.loadChats()
+            }
+            .onAppear {
                 viewModel.loadChats()
             }
         }
@@ -58,15 +77,20 @@ struct ChatPreviewRow: View {
     }
     
     private func formatTimestamp(_ timestamp: TimeInterval) -> String {
-        let date = Date(timeIntervalSince1970: timestamp)
+        let date = Date(timeIntervalSince1970: timestamp/1000) // Convert milliseconds to seconds
         let calendar = Calendar.current
+        let now = Date()
         
         if calendar.isDateInToday(date) {
             let formatter = DateFormatter()
-            formatter.dateFormat = "HH:mm"
+            formatter.dateFormat = "h:mm a"
             return formatter.string(from: date)
         } else if calendar.isDateInYesterday(date) {
             return "Yesterday"
+        } else if calendar.dateComponents([.day], from: date, to: now).day! < 7 {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "EEEE"
+            return formatter.string(from: date)
         } else {
             let formatter = DateFormatter()
             formatter.dateFormat = "dd/MM/yy"

@@ -23,4 +23,12 @@ struct Message: Codable, Identifiable {
         case timestamp
         case isRead
     }
+    
+    func asDictionary() throws -> [String: Any] {
+        let data = try JSONEncoder().encode(self)
+        guard let dictionary = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to create dictionary"])
+        }
+        return dictionary
+    }
 }

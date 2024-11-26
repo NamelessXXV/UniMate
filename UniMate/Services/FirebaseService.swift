@@ -77,16 +77,28 @@ class FirebaseService {
         guard let data = document.data() else {
             throw NSError(domain: "FirebaseService", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid user data format"])
         }
+        if auth.currentUser?.uid ?? "" == data["id"] as? String ?? "" {
+            return User(
+                id: data["id"] as? String ?? "",
+                email: data["email"] as? String ?? "",
+                username: data["username"] as? String ?? "",
+                fullName: data["fullName"] as? String ?? "",
+                photoURL: data["photoURL"] as? String ?? "",
+                bio: data["bio"] as? String ?? "",
+                tags: data["tags"] as? [String] ?? []
+            )
+        } else {
+            return User(
+                id: data["id"] as? String ?? "",
+                email: "",
+                username: data["username"] as? String ?? "",
+                fullName: "",
+                photoURL: data["photoURL"] as? String ?? "",
+                bio: data["bio"] as? String ?? "",
+                tags: data["tags"] as? [String] ?? []
+            )
+        }
         
-        return User(
-            id: data["id"] as? String ?? "",
-            email: data["email"] as? String ?? "",
-            username: data["username"] as? String ?? "",
-            fullName: data["fullName"] as? String ?? "",
-            photoURL: data["photoURL"] as? String ?? "",
-            bio: data["bio"] as? String ?? "",
-            tags: data["tags"] as? [String] ?? []
-        )
     }
     
     private func createUserInDatabase(_ user: User) async throws {

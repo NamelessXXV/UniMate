@@ -19,6 +19,7 @@ class LocationViewModel: NSObject, ObservableObject {
     private var updateTimer: Timer?
     private var scanTimer: Timer?
     private let updateInterval: TimeInterval = 10 // 10 seconds
+    private var user: User?
     
     override init() {
         database = Database.database(url: "https://unimate-demo-default-rtdb.asia-southeast1.firebasedatabase.app")
@@ -120,6 +121,7 @@ class LocationViewModel: NSObject, ObservableObject {
         guard let userId = Auth.auth().currentUser?.uid else { return }
         
         var locationData: [String: Any] = [
+            "id": userId, // Add userId to the data
             "lastUpdated": ServerValue.timestamp(),
             "isActive": true
         ]
@@ -130,7 +132,24 @@ class LocationViewModel: NSObject, ObservableObject {
                 "latitude": location.coordinate.latitude,
                 "longitude": location.coordinate.longitude
             ]
-            locationData["username"] = Auth.auth().currentUser?.displayName ?? "User"
+            
+            // First update with default username and user ID
+//            ref.child("live_locations").child(userId).updateChildValues(locationData)
+            
+            // Then update username and photo URL asynchronously
+            Task {
+                do {
+                    let user = try await FirebaseService.shared.fetchUser(userId: userId)
+                    let username = user.username
+                    locationData["username"] = username
+                    
+                    try await ref.child("live_locations").child(userId).updateChildValues(locationData)
+                } catch {
+                    print("Error updating location: \(error)")
+                }
+            }
+            
+            return
         }
         
         ref.child("live_locations").child(userId).updateChildValues(locationData)

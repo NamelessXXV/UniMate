@@ -7,7 +7,6 @@
 import Firebase
 import FirebaseDatabase
 
-
 class ChatViewModel: ObservableObject {
     @Published var messages: [Message] = []
     @Published var newMessage: String = ""
@@ -54,21 +53,15 @@ class ChatViewModel: ObservableObject {
     }
     
     private func fetchOtherUser() {
-        database.reference().child("users").child(otherUserId).observeSingleEvent(of: .value) { [weak self] snapshot in
-            guard let userData = snapshot.value as? [String: Any] else { return }
-            
+        Task {
             do {
-                var userDict = userData
-                userDict["id"] = self?.otherUserId // Add id to the dictionary before decoding
-                let jsonData = try JSONSerialization.data(withJSONObject: userDict)
-                let user = try JSONDecoder().decode(User.self, from: jsonData)
-                
-                DispatchQueue.main.async {
-                    self?.otherUser = user
+                let user = try await FirebaseService.shared.fetchUser(userId: otherUserId)
+                await MainActor.run {
+                    self.otherUser = user
                 }
             } catch {
-                DispatchQueue.main.async {
-                    self?.error = "Failed to decode user data: \(error.localizedDescription)"
+                await MainActor.run {
+                    self.error = error.localizedDescription
                 }
             }
         }

@@ -11,7 +11,7 @@ struct CommentsView: View {
     var body: some View {
         NavigationView {
             VStack {
-                PostDetailView(post: post)
+                PostDetailView(viewModel: viewModel, post: post)
                     .padding()
                 
                 if isLoading {
