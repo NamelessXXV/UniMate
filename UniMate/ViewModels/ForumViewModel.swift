@@ -1,37 +1,71 @@
-// ForumViewModel.swift
 import Foundation
+import FirebaseFirestore
 
 @MainActor
 class ForumViewModel: ObservableObject {
     @Published var posts: [Post] = []
-    @Published var comments: [String: [Comment]] = [:] // postId: [Comments]
-    @Published var likesCount: [String: Int] = [:] // postId: count
-    @Published var likedPosts: Set<String> = [] // Set of postIds liked by current user
-    @Published var usernames: [String: String] = [:] // userId: username
+    @Published var comments: [String: [Comment]] = [:]
+    @Published var likesCount: [String: Int] = [:]
+    @Published var likedPosts: Set<String> = []
+    @Published var usernames: [String: String] = [:]
     @Published var errorMessage: String?
     @Published var isLoading = false
     @Published var selectedPost: Post?
     @Published var showingPostDetail = false
+    @Published var searchText = ""
+    @Published var isSearching = false
+    @Published var selectedCategory: PostCategory = .all
+    @Published var userPhotos: [String: String] = [:]
     
     private let service = FirebaseService.shared
+    
+    var filteredPosts: [Post] {
+        var filtered = posts
+        
+        if selectedCategory != .all {
+            filtered = filtered.filter { $0.postCategory == selectedCategory } // Use postCategory instead of category
+        }
+        
+        if !searchText.isEmpty {
+            filtered = filtered.filter { post in
+                post.title.localizedCaseInsensitiveContains(searchText) ||
+                post.content.localizedCaseInsensitiveContains(searchText) ||
+                (usernames[post.authorId] ?? "").localizedCaseInsensitiveContains(searchText)
+            }
+        }
+        
+        return filtered.sorted { $0.timestamp > $1.timestamp }
+    }
+    // MARK: - User management
+    func fetchUserPhoto(userId: String) async {
+        do {
+            let user = try await FirebaseService.shared.fetchUser(userId: userId)
+            DispatchQueue.main.async {
+                self.userPhotos[userId] = user.photoURL
+            }
+        } catch {
+            print("Error fetching user photo: \(error)")
+        }
+    }
     
     // MARK: - Posts Management
     func fetchPosts() async {
         isLoading = true
         do {
-            self.posts = try await service.fetchPosts()
+            self.posts = try await service.fetchPosts(forCategory: selectedCategory)
+            print("Fetched \(posts.count) posts")
+            
             await updateLikesInfo()
             
-            // Check like status for all posts if user is logged in
-            if let userId = try? await service.getCurrentUserId() {
+            if let userId = service.getCurrentUserId() {
                 await checkLikesForAllPosts(userId: userId)
             }
             
-            // Fetch usernames for all post authors
             await fetchUsernamesForPosts()
             self.errorMessage = nil
         } catch {
-            self.errorMessage = error.localizedDescription
+            print("Error fetching posts: \(error.localizedDescription)")
+            self.errorMessage = "Failed to load posts: \(error.localizedDescription)"
         }
         isLoading = false
     }
@@ -39,8 +73,12 @@ class ForumViewModel: ObservableObject {
     private func updateLikesInfo() async {
         await withTaskGroup(of: Void.self) { group in
             for post in posts {
+                guard let postId = post.id else {
+                    print("Warning: Post without ID encountered")
+                    continue
+                }
                 group.addTask {
-                    await self.fetchLikesCount(for: post.id)
+                    await self.fetchLikesCount(for: postId)
                 }
             }
         }
@@ -49,8 +87,12 @@ class ForumViewModel: ObservableObject {
     private func checkLikesForAllPosts(userId: String) async {
         await withTaskGroup(of: Void.self) { group in
             for post in posts {
+                guard let postId = post.id else {
+                    print("Warning: Post without ID encountered")
+                    continue
+                }
                 group.addTask {
-                    await self.checkIfLiked(postId: post.id, userId: userId)
+                    await self.checkIfLiked(postId: postId, userId: userId)
                 }
             }
         }
@@ -67,33 +109,62 @@ class ForumViewModel: ObservableObject {
         }
     }
     
-    func createPost(title: String, content: String, userId: String) async {
+    func createPost(title: String, content: String, userId: String, category: PostCategory) async {
         do {
-            try await service.createPost(title: title, content: content, userId: userId)
+            print("Creating post with title: \(title), category: \(category)")
+            // Convert PostCategory to String using rawValue
+            let newPost = try await service.createPostWithCategory(
+                title: title,
+                content: content,
+                userId: userId,
+                category: category.rawValue // Convert to String here
+            )
+            
+            // Verify post creation
+            print("Post created with ID: \(newPost.id ?? "nil")")
+            
+            // Immediately append the new post to local array
+            posts.append(newPost)
+            
+            // Fetch updated posts list
             await fetchPosts()
+            
             self.errorMessage = nil
         } catch {
-            self.errorMessage = error.localizedDescription
+            print("Error creating post: \(error.localizedDescription)")
+            self.errorMessage = "Failed to create post: \(error.localizedDescription)"
         }
+    }
+    
+    func changeCategory(_ category: PostCategory) async {
+        selectedCategory = category
+        await fetchPosts()
     }
     
     func deletePost(postId: String) async {
         do {
             try await service.deletePost(postId: postId)
+            posts.removeAll { $0.id == postId }
             await fetchPosts()
             self.errorMessage = nil
         } catch {
-            self.errorMessage = error.localizedDescription
+            print("Error deleting post: \(error.localizedDescription)")
+            self.errorMessage = "Failed to delete post: \(error.localizedDescription)"
         }
     }
     
     func updatePost(postId: String, title: String, content: String) async {
         do {
             try await service.updatePost(postId: postId, title: title, content: content)
+            if let index = posts.firstIndex(where: { $0.id == postId }) {
+                posts[index].title = title
+                posts[index].content = content
+            }
             await fetchPosts()
             self.errorMessage = nil
         } catch {
-            self.errorMessage = error.localizedDescription
+            print("Error updating post: \(error.localizedDescription)")
+            self.errorMessage = "Failed to update post: \(error.localizedDescription)"
         }
     }
     
@@ -105,7 +176,7 @@ class ForumViewModel: ObservableObject {
             let username = try await service.fetchUsername(userId: userId)
             usernames[userId] = username
         } catch {
-            print("Error fetching username: \(error.localizedDescription)")
+            print("Error fetching username for \(userId): \(error.localizedDescription)")
             usernames[userId] = "User"
         }
     }
@@ -119,7 +190,7 @@ class ForumViewModel: ObservableObject {
         do {
             let wasLiked = likedPosts.contains(postId)
             
-            // Optimistically update UI
+            // Optimistic update
             if wasLiked {
                 likedPosts.remove(postId)
                 likesCount[postId] = (likesCount[postId] ?? 1) - 1
@@ -128,18 +199,12 @@ class ForumViewModel: ObservableObject {
                 likesCount[postId] = (likesCount[postId] ?? 0) + 1
             }
             
-            // Update backend
-            if wasLiked {
-                try await service.unlikePost(postId: postId, userId: userId)
-            } else {
-                try await service.likePost(postId: postId, userId: userId)
-            }
-            
-            // Fetch actual count to ensure accuracy
+            try await service.toggleLike(postId: postId, userId: userId, isLiked: !wasLiked)
             await fetchLikesCount(for: postId)
-            self.errorMessage = nil
+            
         } catch {
-            // Revert optimistic update if error occurs
+            // Revert optimistic update on failure
+            print("Error toggling like: \(error.localizedDescription)")
             if likedPosts.contains(postId) {
                 likedPosts.remove(postId)
                 likesCount[postId] = (likesCount[postId] ?? 1) - 1
@@ -147,7 +212,7 @@ class ForumViewModel: ObservableObject {
                 likedPosts.insert(postId)
                 likesCount[postId] = (likesCount[postId] ?? 0) + 1
             }
-            self.errorMessage = error.localizedDescription
+            self.errorMessage = "Failed to update like: \(error.localizedDescription)"
         }
     }
     
@@ -156,7 +221,7 @@ class ForumViewModel: ObservableObject {
             let count = try await service.getLikesCount(postId: postId)
             likesCount[postId] = count
         } catch {
-            print("Error fetching likes count: \(error.localizedDescription)")
+            print("Error fetching likes count for \(postId): \(error.localizedDescription)")
         }
     }
     
@@ -169,7 +234,7 @@ class ForumViewModel: ObservableObject {
                 self.likedPosts.remove(postId)
             }
         } catch {
-            print("Error checking like status: \(error.localizedDescription)")
+            print("Error checking like status for post \(postId): \(error.localizedDescription)")
         }
     }
     
@@ -179,7 +244,6 @@ class ForumViewModel: ObservableObject {
             let fetchedComments = try await service.fetchComments(postId: postId)
             comments[postId] = fetchedComments
             
-            // Fetch usernames for comment authors
             let commentAuthorIds = Set(fetchedComments.map { $0.authorId })
             await withTaskGroup(of: Void.self) { group in
                 for authorId in commentAuthorIds {
@@ -189,9 +253,9 @@ class ForumViewModel: ObservableObject {
                 }
             }
             
-            self.errorMessage = nil
         } catch {
-            self.errorMessage = error.localizedDescription
+            print("Error fetching comments for post \(postId): \(error.localizedDescription)")
+            self.errorMessage = "Failed to load comments: \(error.localizedDescription)"
         }
     }
     
@@ -199,9 +263,9 @@ class ForumViewModel: ObservableObject {
         do {
             try await service.addComment(postId: postId, userId: userId, content: content)
             await fetchComments(for: postId)
-            self.errorMessage = nil
         } catch {
-            self.errorMessage = error.localizedDescription
+            print("Error adding comment: \(error.localizedDescription)")
+            self.errorMessage = "Failed to add comment: \(error.localizedDescription)"
         }
     }
     
@@ -209,9 +273,9 @@ class ForumViewModel: ObservableObject {
         do {
             try await service.deleteComment(postId: postId, commentId: commentId)
             await fetchComments(for: postId)
-            self.errorMessage = nil
         } catch {
-            self.errorMessage = error.localizedDescription
+            print("Error deleting comment: \(error.localizedDescription)")
+            self.errorMessage = "Failed to delete comment: \(error.localizedDescription)"
         }
     }
     
@@ -219,9 +283,9 @@ class ForumViewModel: ObservableObject {
         do {
             try await service.updateComment(postId: postId, commentId: commentId, content: content)
             await fetchComments(for: postId)
-            self.errorMessage = nil
         } catch {
-            self.errorMessage = error.localizedDescription
+            print("Error updating comment: \(error.localizedDescription)")
+            self.errorMessage = "Failed to update comment: \(error.localizedDescription)"
         }
     }
     

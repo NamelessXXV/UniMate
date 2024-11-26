@@ -25,7 +25,11 @@ class FirebaseService {
                 return User(
                     id: result.user.uid,
                     email: email,
-                    username: email.components(separatedBy: "@").first ?? "User"
+                    username: email.components(separatedBy: "@").first ?? "User",
+                    fullName: "",
+                    photoURL: "",
+                    bio: "",
+                    tags: []
                 )
             }
         } catch {
@@ -39,7 +43,15 @@ class FirebaseService {
             let result = try await auth.createUser(withEmail: email, password: password)
             print("User created with UID: \(result.user.uid)")
             
-            let user = User(id: result.user.uid, email: email, username: username)
+            let user = User(
+                id: result.user.uid,
+                email: email,
+                username: username,
+                fullName: "",
+                photoURL: "",
+                bio: "",
+                tags: []
+            )
             
             try await createUserInDatabase(user)
             print("User data stored in Firestore")
@@ -56,22 +68,25 @@ class FirebaseService {
     }
     
     // MARK: - User Methods
-    private func fetchUser(userId: String) async throws -> User {
+    func fetchUser(userId: String) async throws -> User {
         let document = try await db.collection("users").document(userId).getDocument()
         guard document.exists else {
             throw NSError(domain: "FirebaseService", code: 404, userInfo: [NSLocalizedDescriptionKey: "User document not found"])
         }
         
-        guard
-            let data = document.data(),
-            let id = data["id"] as? String,
-            let email = data["email"] as? String,
-            let username = data["username"] as? String
-        else {
+        guard let data = document.data() else {
             throw NSError(domain: "FirebaseService", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid user data format"])
         }
         
-        return User(id: id, email: email, username: username)
+        return User(
+            id: data["id"] as? String ?? "",
+            email: data["email"] as? String ?? "",
+            username: data["username"] as? String ?? "",
+            fullName: data["fullName"] as? String ?? "",
+            photoURL: data["photoURL"] as? String ?? "",
+            bio: data["bio"] as? String ?? "",
+            tags: data["tags"] as? [String] ?? []
+        )
     }
     
     private func createUserInDatabase(_ user: User) async throws {
@@ -79,7 +94,11 @@ class FirebaseService {
         try await userRef.setData([
             "id": user.id,
             "email": user.email,
-            "username": user.username
+            "username": user.username,
+            "fullName": user.fullName,
+            "photoURL": user.photoURL,
+            "bio": user.bio,
+            "tags": user.tags
         ])
     }
     
@@ -94,7 +113,8 @@ class FirebaseService {
     }
     
     // MARK: - Post Methods
-    func createPost(title: String, content: String, userId: String) async throws {
+    func createPostWithCategory(title: String, content: String, userId: String, category: String) async throws -> Post {
+        let db = Firestore.firestore()
         let postRef = db.collection("posts").document()
         
         let post = Post(
@@ -102,42 +122,30 @@ class FirebaseService {
             authorId: userId,
             title: title,
             content: content,
-            timestamp: Date()
+            timestamp: Date(),
+            category: category
         )
         
-        try await postRef.setData([
-            "id": post.id,
-            "authorId": post.authorId,
-            "title": post.title,
-            "content": post.content,
-            "timestamp": Timestamp(date: post.timestamp)
-        ])
+        try await postRef.setData(from: post)
+        return post
     }
-    
-    func fetchPosts() async throws -> [Post] {
-        let snapshot = try await db.collection("posts")
-            .order(by: "timestamp", descending: true)
-            .getDocuments()
+
+    func fetchPosts(forCategory category: PostCategory? = nil) async throws -> [Post] {
+        let db = Firestore.firestore()
+        let postsRef = db.collection("posts")
         
+        let query: Query
+        if category == nil || category == .all {
+            query = postsRef.order(by: "timestamp", descending: true)
+        } else {
+            query = postsRef
+                .whereField("category", isEqualTo: category?.rawValue ?? "")
+                .order(by: "timestamp", descending: true)
+        }
+        
+        let snapshot = try await query.getDocuments()
         return snapshot.documents.compactMap { document in
-            let data = document.data()
-            guard
-                let id = data["id"] as? String,
-                let authorId = data["authorId"] as? String,
-                let title = data["title"] as? String,
-                let content = data["content"] as? String,
-                let timestamp = data["timestamp"] as? Timestamp
-            else {
-                return nil
-            }
-            
-            return Post(
-                id: id,
-                authorId: authorId,
-                title: title,
-                content: content,
-                timestamp: timestamp.dateValue()
-            )
+            try? document.data(as: Post.self)
         }
     }
     
@@ -169,9 +177,17 @@ class FirebaseService {
     }
     
     // MARK: - Likes Methods
+    func toggleLike(postId: String, userId: String, isLiked: Bool) async throws {
+        if isLiked {
+            try await likePost(postId: postId, userId: userId)
+        } else {
+            try await unlikePost(postId: postId, userId: userId)
+        }
+    }
+    
     func likePost(postId: String, userId: String) async throws {
         let like = Like(
-            id: userId, // Using userId as the like document ID
+            id: userId,
             postId: postId,
             userId: userId,
             timestamp: Date()
@@ -297,5 +313,4 @@ class FirebaseService {
     func getCurrentUserId() -> String? {
         return Auth.auth().currentUser?.uid
     }
-    
 }

@@ -1,4 +1,3 @@
-// Views/Main/PostRowView.swift
 import SwiftUI
 
 struct PostRowView: View {
@@ -34,7 +33,7 @@ struct PostRowView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     // Author and timestamp
                     HStack {
-                        Text(viewModel.getUsername(for: post.authorId))
+                        Text(viewModel.getUsername(for: post.authorId ?? ""))
                             .font(.subheadline)
                             .fontWeight(.medium)
                         
@@ -57,17 +56,17 @@ struct PostRowView: View {
                 HStack(spacing: 16) {
                     // Like button with count
                     HStack(spacing: 4) {
-                        Text("\(viewModel.likesCount[post.id] ?? 0)")
+                        Text("\(viewModel.likesCount[post.id ?? ""] ?? 0)")
                             .font(.subheadline)
                             .foregroundColor(.gray)
                         
-                        Image(systemName: viewModel.likedPosts.contains(post.id) ? "heart.fill" : "heart")
-                            .foregroundColor(viewModel.likedPosts.contains(post.id) ? .red : .gray)
+                        Image(systemName: viewModel.likedPosts.contains(post.id ?? "") ? "heart.fill" : "heart")
+                            .foregroundColor(viewModel.likedPosts.contains(post.id ?? "") ? .red : .gray)
                     }
                     
                     // Comment count
                     HStack(spacing: 4) {
-                        Text("\((viewModel.comments[post.id] ?? []).count)")
+                        Text("\((viewModel.comments[post.id ?? ""] ?? []).count)")
                             .font(.subheadline)
                             .foregroundColor(.gray)
                         
@@ -92,9 +91,10 @@ struct PostRowView: View {
                         withAnimation(.spring()) {
                             if -gesture.translation.width >= swipeThreshold {
                                 // Like action
-                                if let userId = authViewModel.currentUser?.id {
+                                if let userId = authViewModel.currentUser?.id,
+                                   let postId = post.id {
                                     Task {
-                                        await viewModel.toggleLike(postId: post.id, userId: userId)
+                                        await viewModel.toggleLike(postId: postId, userId: userId)
                                     }
                                 }
                             }
@@ -107,10 +107,13 @@ struct PostRowView: View {
             }
         }
         .task {
-            if let userId = authViewModel.currentUser?.id {
-                await viewModel.checkIfLiked(postId: post.id, userId: userId)
+            if let userId = authViewModel.currentUser?.id,
+               let postId = post.id {
+                await viewModel.checkIfLiked(postId: postId, userId: userId)
             }
-            await viewModel.fetchComments(for: post.id)
+            if let postId = post.id {
+                await viewModel.fetchComments(for: postId)
+            }
         }
         .sheet(isPresented: $showingComments) {
             if #available(iOS 16.0, *) {

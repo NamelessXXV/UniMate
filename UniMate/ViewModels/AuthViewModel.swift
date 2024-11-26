@@ -37,7 +37,11 @@ class AuthViewModel: ObservableObject {
                             self.currentUser = User(
                                 id: firebaseUser.uid,
                                 email: userData["email"] as? String ?? "",
-                                username: userData["username"] as? String ?? ""
+                                username: userData["username"] as? String ?? "",
+                                fullName: userData["fullName"] as? String ?? "",
+                                photoURL: userData["photoURL"] as? String ?? "",
+                                bio: userData["bio"] as? String ?? "",
+                                tags: userData["tags"] as? [String] ?? []
                             )
                             self.isAuthenticated = true
                         } else {

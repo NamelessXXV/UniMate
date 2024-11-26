@@ -13,11 +13,20 @@ struct ForumView: View {
     
     var body: some View {
         NavigationView {
-            Group {
-                if viewModel.isLoading {
-                    ProgressView()
-                } else {
-                    postsList
+            VStack(spacing: 0) {
+                // Search bar
+                searchBar
+                
+                // Category filter
+                categoryFilter
+                
+                // Main content
+                Group {
+                    if viewModel.isLoading {
+                        ProgressView()
+                    } else {
+                        postsList
+                    }
                 }
             }
             .navigationTitle("Forum")
@@ -40,10 +49,47 @@ struct ForumView: View {
         }
     }
     
+    private var searchBar: some View {
+        HStack {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.gray)
+            
+            TextField("Search posts...", text: $viewModel.searchText)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+            
+            if !viewModel.searchText.isEmpty {
+                Button(action: { viewModel.searchText = "" }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.gray)
+                }
+            }
+        }
+        .padding()
+    }
+    
+    private var categoryFilter: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 10) {
+                ForEach(PostCategory.allCases) { category in
+                    CategoryButton(
+                        category: category,
+                        isSelected: viewModel.selectedCategory == category
+                    ) {
+                        Task {
+                            await viewModel.changeCategory(category)
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal)
+        }
+        .padding(.vertical, 8)
+    }
+    
     private var postsList: some View {
         ScrollView {
             LazyVStack(spacing: 1) {
-                ForEach(viewModel.posts) { post in
+                ForEach(viewModel.filteredPosts) { post in
                     PostRowView(post: post, viewModel: viewModel)
                         .padding(.vertical, 1)
                         .background(Color(UIColor.systemBackground))
@@ -99,7 +145,22 @@ struct ForumView: View {
     }
 }
 
-#Preview {
-    ForumView()
-        .environmentObject(AuthViewModel())
+struct CategoryButton: View {
+    let category: PostCategory
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                Image(systemName: category.icon)
+                Text(category.rawValue)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(isSelected ? Color.blue : Color.gray.opacity(0.2))
+            .foregroundColor(isSelected ? .white : .primary)
+            .cornerRadius(20)
+        }
+    }
 }

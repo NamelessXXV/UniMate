@@ -1,4 +1,3 @@
-// Views/Forum/CommentsView.swift
 import SwiftUI
 
 struct CommentsView: View {
@@ -20,10 +19,11 @@ struct CommentsView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     List {
-                        ForEach(viewModel.comments[post.id] ?? []) { comment in
+                        ForEach(viewModel.comments[post.id ?? ""] ?? []) { comment in
                             CommentRowView(
                                 comment: comment,
-                                username: viewModel.usernames[comment.authorId] ?? "Unknown User"
+                                username: viewModel.usernames[comment.authorId] ?? "Unknown User",
+                                userPhotoURL: viewModel.userPhotos[comment.authorId]
                             )
                         }
                     }
@@ -35,11 +35,12 @@ struct CommentsView: View {
                             
                             Button(action: {
                                 guard !newCommentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-                                      let userId = authViewModel.currentUser?.id else { return }
+                                      let userId = authViewModel.currentUser?.id,
+                                      let postId = post.id else { return }
                                 
                                 Task {
                                     await viewModel.addComment(
-                                        postId: post.id,
+                                        postId: postId,
                                         userId: userId,
                                         content: newCommentText
                                     )
@@ -72,7 +73,13 @@ struct CommentsView: View {
         }
         .task {
             isLoading = true
-            await viewModel.fetchComments(for: post.id)
+            if let postId = post.id {
+                await viewModel.fetchComments(for: postId)
+                // Fetch user photos for all comments
+                for comment in viewModel.comments[postId] ?? [] {
+                    await viewModel.fetchUserPhoto(userId: comment.authorId)
+                }
+            }
             isLoading = false
         }
     }

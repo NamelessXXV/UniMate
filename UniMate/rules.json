@@ -1,0 +1,89 @@
+{
+  "rules": {
+    "live_locations": {
+      ".read": "auth != null",  // Allow reading the entire locations node
+      "$uid": {
+        ".write": "auth != null && auth.uid == $uid",
+        ".validate": "newData.hasChildren(['location', 'lastUpdated', 'username', 'isActive'])",
+        
+        "location": {
+          ".validate": "newData.hasChildren(['latitude', 'longitude'])",
+          "latitude": {
+            ".validate": "newData.isNumber() && newData.val() >= -90 && newData.val() <= 90"
+          },
+          "longitude": {
+            ".validate": "newData.isNumber() && newData.val() >= -180 && newData.val() <= 180"
+          }
+        },
+        
+        "lastUpdated": {
+          ".validate": "newData.isNumber()"
+        },
+        
+        "username": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        
+        "isActive": {
+          ".validate": "newData.isBoolean()"
+        },
+        
+        "photoURL": {
+          ".validate": "!newData.exists() || newData.isString()"
+        }
+      }
+    },
+    "users": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid == $uid",
+        "username": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "email": {
+          ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$/)"
+        }
+      }
+    },
+    "chats": {
+      "$chatId": {
+        ".read": "auth != null && data.child('participants').child(auth.uid).exists()",
+        ".write": "auth != null && ((!data.exists() && newData.child('participants').child(auth.uid).exists()) || data.child('participants').child(auth.uid).exists())",
+        "participants": {
+          "$userId": {
+            ".validate": "newData.isBoolean()"
+          }
+        },
+        "messages": {
+          "$messageId": {
+            ".validate": "newData.hasChildren(['senderId', 'receiverId', 'content', 'timestamp', 'isRead'])",
+            "senderId": {
+              ".validate": "newData.val() == auth.uid"
+            },
+            "receiverId": {
+              ".validate": "root.child('chats').child($chatId).child('participants').child(newData.val()).exists()"
+            },
+            "content": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 1000"
+            },
+            "timestamp": {
+              ".validate": "newData.isNumber()"
+            },
+            "isRead": {
+              ".validate": "newData.isBoolean()"
+            }
+          }
+        }
+      }
+    },
+    "user_chats": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && (auth.uid == $uid || root.child('chats').child(newData.val()).child('participants').child(auth.uid).exists())",
+        "$chatId": {
+          ".validate": "newData.isBoolean() && root.child('chats').child($chatId).exists()"
+        }
+      }
+    }
+  }
+}

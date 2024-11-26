@@ -17,16 +17,20 @@ struct MainTabView: View {
                     Label("Match", systemImage: "figure.2.and.child.holdinghands")
                 }
             
-            ProfileView()
+//            ProfileView(user: User)
+//                .tabItem {
+//                    Label("Profile", systemImage: "person")
+//                }
+            ChatListView()
                 .tabItem {
-                    Label("Profile", systemImage: "person")
+                    Label("Chats", systemImage: "message")
                 }
         }
         .environmentObject(locationViewModel)
     }
 }
 
-#Preview {
-    MainTabView()
-        .environmentObject(AuthViewModel())
-}
+//#Preview {
+//    MainTabView()
+//        .environmentObject(AuthViewModel())
+//}
