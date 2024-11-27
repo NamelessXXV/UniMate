@@ -1,6 +1,7 @@
 // UniMateApp.swift
 import SwiftUI
 import FirebaseCore
+import FirebaseAuth
 
 @main
 struct UniMateApp: App {

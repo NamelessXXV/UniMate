@@ -9,7 +9,7 @@ import FirebaseAuth
 
 struct ProfileView: View {
     let userId: String
-    @StateObject private var viewModel = UserViewModel()
+    @StateObject var viewModel = UserViewModel()
     @State private var showingChat = false
     @State private var editedUsername = ""
     @State private var editedEmail = ""
@@ -18,7 +18,6 @@ struct ProfileView: View {
     @State private var editedTags = ""
     @State private var selectedImage: UIImage?
     @State private var showImagePicker = false
-    @Environment(\.presentationMode) var presentationMode
     
     private var isCurrentUser: Bool {
         userId == Auth.auth().currentUser?.uid
@@ -210,8 +209,8 @@ struct ProfileView: View {
         .sheet(isPresented: $showImagePicker) {
             ImagePicker(image: $selectedImage)
         }
-        .task {
-            await viewModel.fetchUser(userId: userId)
+        .task() {
+                await viewModel.fetchUser(userId: userId)
         }
     }
 }

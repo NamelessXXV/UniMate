@@ -12,18 +12,34 @@ import FirebaseStorage
 class UserViewModel: ObservableObject {
     @Published var user: User?
     @Published var isEditing = false
+    @Published var isLoading = false
+    @Published var error: Error?
     private let db = Firestore.firestore()
     
     func fetchUser(userId: String) async {
+        guard !userId.isEmpty else {
+            print("❌ Empty userId provided")
+            return
+        }
+        
+        DispatchQueue.main.async {
+            self.isLoading = true
+        }
+        
         print("📥 Fetching user with ID: \(userId)")
         do {
             let fetchedUser = try await FirebaseService.shared.fetchUser(userId: userId)
             DispatchQueue.main.async {
                 self.user = fetchedUser
+                self.isLoading = false
                 print("✅ Successfully fetched user: \(fetchedUser)")
             }
         } catch {
-            print("❌ Error fetching user: \(error)")
+            DispatchQueue.main.async {
+                self.error = error
+                self.isLoading = false
+                print("❌ Error fetching user: \(error)")
+            }
         }
     }
     

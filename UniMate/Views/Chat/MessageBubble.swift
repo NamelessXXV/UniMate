@@ -12,6 +12,8 @@ struct MessageBubble: View {
     let isFromCurrentUser: Bool
     let showTimestamp: Bool
     
+    @Environment(\.colorScheme) var colorScheme
+    
     var body: some View {
         HStack {
             if isFromCurrentUser { Spacer() }
@@ -19,8 +21,8 @@ struct MessageBubble: View {
             VStack(alignment: isFromCurrentUser ? .trailing : .leading) {
                 Text(message.content)
                     .padding(10)
-                    .background(isFromCurrentUser ? Color.blue : Color.gray.opacity(0.2))
-                    .foregroundColor(isFromCurrentUser ? .white : .black)
+                    .background(isFromCurrentUser ? Color.blue : (colorScheme == .dark ? Color.gray.opacity(0.3) : Color.gray.opacity(0.2)))
+                    .foregroundColor(isFromCurrentUser ? .white : (colorScheme == .dark ? .white : .black))
                     .cornerRadius(16)
                 
                 if showTimestamp {

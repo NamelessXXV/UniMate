@@ -5,6 +5,7 @@ import FirebaseAuth
 struct MainTabView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @StateObject private var locationViewModel = LocationViewModel()
+    @StateObject private var userViewModel = UserViewModel()
     
     var body: some View {
         TabView {
@@ -12,8 +13,9 @@ struct MainTabView: View {
                 .tabItem {
                     Label("Forum", systemImage: "bubble.left.and.bubble.right")  // or "text.bubble"
                 }
-
-            MatchingView()
+            NavigationStack {
+                MatchingView()
+            }
                 .tabItem {
                     Label("Match", systemImage: "figure.2.and.child.holdinghands")
                 }
@@ -23,10 +25,14 @@ struct MainTabView: View {
                     Label("Chats", systemImage: "message.and.waveform")  // or "message.and.waveform"
                 }
             
-            ProfileView(userId: Auth.auth().currentUser?.uid ?? "")
-                .tabItem {
-                    Label("Profile", systemImage: "person")
+            if let userId = Auth.auth().currentUser?.uid {
+                NavigationStack {
+                    ProfileView(userId: userId)
                 }
+                    .tabItem {
+                        Label("Profile", systemImage: "person")
+                    }
+            }
         }
         .environmentObject(locationViewModel)
     }

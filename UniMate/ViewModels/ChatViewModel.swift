@@ -33,22 +33,32 @@ class ChatViewModel: ObservableObject {
     }
     
     private func setupChat() {
-        let participantsRef = database.reference().child("chats").child(chatId).child("participants")
-        participantsRef.updateChildValues([
-            currentUserId: true,
-            otherUserId: true
-        ]) { [weak self] error, _ in
-            if let error = error {
-                DispatchQueue.main.async {
-                    self?.error = error.localizedDescription
-                }
-                return
-            }
+        let chatRef = database.reference().child("chats").child(chatId)
+        
+        // First check if the chat already exists
+        chatRef.child("participants").observeSingleEvent(of: .value) { [weak self] snapshot in
+            guard let self = self else { return }
             
-            // Add to user_chats for both users
-            let userChatsRef = self?.database.reference().child("user_chats")
-            userChatsRef?.child(self?.currentUserId ?? "").updateChildValues([self?.chatId ?? "": true])
-            userChatsRef?.child(self?.otherUserId ?? "").updateChildValues([self?.chatId ?? "": true])
+            // Only create the chat if it doesn't exist
+            if !snapshot.exists() {
+                let participantsRef = chatRef.child("participants")
+                participantsRef.updateChildValues([
+                    self.currentUserId: true,
+                    self.otherUserId: true
+                ]) { error, _ in
+                    if let error = error {
+                        DispatchQueue.main.async {
+                            self.error = error.localizedDescription
+                        }
+                        return
+                    }
+                    
+                    // Add to user_chats for both users
+                    let userChatsRef = self.database.reference().child("user_chats")
+                    userChatsRef.child(self.currentUserId).updateChildValues([self.chatId: true])
+                    userChatsRef.child(self.otherUserId).updateChildValues([self.chatId: true])
+                }
+            }
         }
     }
     
