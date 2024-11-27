@@ -174,6 +174,26 @@ struct ProfileView: View {
                                     .padding(.top)
                                 }
                             }
+                            if isCurrentUser {
+                                Button(action: {
+                                    do {
+                                        try Auth.auth().signOut()
+                                    } catch {
+                                        print("Error signing out: \(error)")
+                                    }
+                                }) {
+                                    HStack {
+                                        Image(systemName: "rectangle.portrait.and.arrow.right")
+                                        Text("Logout")
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.red)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(10)
+                                }
+                                .padding(.top, 20)
+                            }
                         }
                         .padding()
                     }

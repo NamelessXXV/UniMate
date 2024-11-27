@@ -11,6 +11,7 @@ import Firebase
 struct ChatListView: View {
     @StateObject private var viewModel = ChatListViewModel()
     @Environment(\.presentationMode) var presentationMode
+    @Environment(\.scenePhase) var scenePhase
     
     var body: some View {
         NavigationView {
@@ -41,6 +42,11 @@ struct ChatListView: View {
             }
             .onAppear {
                 viewModel.loadChats()
+            }
+            .onChange(of: scenePhase) { newPhase in
+                if newPhase == .active {
+                    viewModel.setupAutoRefresh()
+                }
             }
         }
     }

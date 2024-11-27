@@ -7,19 +7,79 @@
 
 import Firebase
 import FirebaseAuth
+import CoreData
 
 class ChatListViewModel: ObservableObject {
     @Published var chatPreviews: [ChatPreview] = []
     @Published var error: String? = nil
+    private var autoRefreshTimer: Timer?
     
     let currentUserId: String
     private let database = Database.database(url: "https://unimate-demo-default-rtdb.asia-southeast1.firebasedatabase.app")
     private var userChatsHandle: DatabaseHandle?
+    private let coreDataManager = CoreDataManager.shared
     
     init() {
         self.currentUserId = Auth.auth().currentUser?.uid ?? ""
         print("Debug: Initialized ChatListViewModel with currentUserId: \(currentUserId)")
+        loadCachedChats()
         loadChats()
+        setupAutoRefresh()
+    }
+    
+    func setupAutoRefresh() {
+        // Invalidate existing timer if any
+        autoRefreshTimer?.invalidate()
+        
+        // Create new timer that fires every 3 seconds
+        autoRefreshTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
+            print("🔄 Chat refreshed")
+            self?.loadChats()
+        }
+    }
+    
+    private func loadCachedChats() {
+        let fetchRequest: NSFetchRequest<ChatPreviewEntity> = ChatPreviewEntity.fetchRequest()
+        fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \ChatPreviewEntity.timestamp, ascending: false)]
+        
+        do {
+            let entities = try coreDataManager.viewContext.fetch(fetchRequest)
+            let previews = entities.map { entity in
+                ChatPreview(
+                    id: entity.id ?? "",
+                    otherUserId: entity.otherUserId ?? "",
+                    username: entity.username ?? "",
+                    lastMessage: entity.lastMessage ?? "",
+                    timestamp: entity.timestamp,
+                    unreadCount: Int(entity.unreadCount)
+                )
+            }
+            DispatchQueue.main.async {
+                self.chatPreviews = previews
+            }
+        } catch {
+            print("Debug: Error fetching cached chats: \(error)")
+        }
+    }
+    
+    private func updateCoreData(with newPreviews: [ChatPreview]) {
+        let context = coreDataManager.viewContext
+        
+        // Clear existing data
+        coreDataManager.clearAllChatPreviews()
+        
+        // Insert new data
+        for preview in newPreviews {
+            let entity = ChatPreviewEntity(context: context)
+            entity.id = preview.id
+            entity.otherUserId = preview.otherUserId
+            entity.username = preview.username
+            entity.lastMessage = preview.lastMessage
+            entity.timestamp = preview.timestamp ?? 0
+            entity.unreadCount = Int32(preview.unreadCount)
+        }
+        
+        coreDataManager.saveContext()
     }
     
     func loadChats() {
@@ -29,7 +89,7 @@ class ChatListViewModel: ObservableObject {
             return
         }
         
-        print("Debug: Loading chats for user: \(currentUserId)")
+//        print("Debug: Loading chats for user: \(currentUserId)")
         let userChatsRef = database.reference().child("user_chats").child(currentUserId)
         
         if let handle = userChatsHandle {
@@ -37,7 +97,7 @@ class ChatListViewModel: ObservableObject {
         }
         
         userChatsHandle = userChatsRef.observe(.value) { [weak self] snapshot in
-            print("Debug: Received snapshot: \(snapshot.value ?? "nil")")
+//            print("Debug: Received snapshot: \(snapshot.value ?? "nil")")
             
             guard let self = self else { return }
             
@@ -45,46 +105,50 @@ class ChatListViewModel: ObservableObject {
                 print("Debug: No chats found or invalid format")
                 DispatchQueue.main.async {
                     self.chatPreviews = []
+                    self.updateCoreData(with: [])
                 }
                 return
             }
             
-            print("Debug: Found \(chatDict.count) chats")
+//            print("Debug: Found \(chatDict.count) chats")
             
-            let dispatchGroup = DispatchGroup()
-            var newPreviews: [ChatPreview] = []
-            
-            for (chatId, _) in chatDict {
-                dispatchGroup.enter()
-                print("Debug: Fetching preview for chat: \(chatId)")
+            // Create an async Task to handle all chat previews
+            Task {
+                var newPreviews: [ChatPreview] = []
                 
-                let chatRef = self.database.reference().child("chats").child(chatId)
-                chatRef.observeSingleEvent(of: .value) { snapshot in
-                    print("Debug: Chat data for \(chatId): \(snapshot.value ?? "nil")")
+                // Use async/await instead of DispatchGroup
+                for (chatId, _) in chatDict {
+//                    print("Debug: Fetching preview for chat: \(chatId)")
                     
-                    guard let chatData = snapshot.value as? [String: Any],
-                          let participants = chatData["participants"] as? [String: Bool] else {
-                        print("Debug: Invalid chat data format for \(chatId)")
-                        dispatchGroup.leave()
-                        return
-                    }
-                    
-                    let otherUserId = participants.keys.first { $0 != self.currentUserId } ?? ""
-                    print("Debug: Other user ID: \(otherUserId)")
-                    
-                    let messages = chatData["messages"] as? [String: Any] ?? [:]
-                    let sortedMessages = messages.values
-                        .compactMap { $0 as? [String: Any] }
-                        .sorted { ($0["timestamp"] as? TimeInterval ?? 0) > ($1["timestamp"] as? TimeInterval ?? 0) }
-                    
-                    let lastMessage = sortedMessages.first
-                    let unreadCount = sortedMessages
-                        .filter { ($0["receiverId"] as? String == self.currentUserId) &&
-                            ($0["isRead"] as? Bool == false) }
-                        .count
-                    
-                    // Use FirebaseService to fetch user
-                    Task {
+                    do {
+                        // Convert Firebase callback to async/await
+                        let chatData = try await withCheckedThrowingContinuation { continuation in
+                            let chatRef = self.database.reference().child("chats").child(chatId)
+                            chatRef.observeSingleEvent(of: .value) { snapshot in
+                                if let chatData = snapshot.value as? [String: Any] {
+                                    continuation.resume(returning: chatData)
+                                } else {
+                                    continuation.resume(throwing: NSError(domain: "", code: -1))
+                                }
+                            }
+                        }
+                        
+                        guard let participants = chatData["participants"] as? [String: Bool] else { continue }
+                        
+                        let otherUserId = participants.keys.first { $0 != self.currentUserId } ?? ""
+//                        print("Debug: Other user ID: \(otherUserId)")
+                        
+                        let messages = chatData["messages"] as? [String: Any] ?? [:]
+                        let sortedMessages = messages.values
+                            .compactMap { $0 as? [String: Any] }
+                            .sorted { ($0["timestamp"] as? TimeInterval ?? 0) > ($1["timestamp"] as? TimeInterval ?? 0) }
+                        
+                        let lastMessage = sortedMessages.first
+                        let unreadCount = sortedMessages
+                            .filter { ($0["receiverId"] as? String == self.currentUserId) &&
+                                ($0["isRead"] as? Bool == false) }
+                            .count
+                        
                         do {
                             let user = try await FirebaseService.shared.fetchUser(userId: otherUserId)
                             let preview = ChatPreview(
@@ -96,10 +160,8 @@ class ChatListViewModel: ObservableObject {
                                 unreadCount: unreadCount
                             )
                             newPreviews.append(preview)
-                            print("Debug: Created preview for chat \(chatId): \(preview)")
                         } catch {
                             print("Debug: Error fetching user \(otherUserId): \(error)")
-                            // Create preview with user ID as fallback
                             let preview = ChatPreview(
                                 id: chatId,
                                 otherUserId: otherUserId,
@@ -110,14 +172,18 @@ class ChatListViewModel: ObservableObject {
                             )
                             newPreviews.append(preview)
                         }
-                        dispatchGroup.leave()
+                    } catch {
+                        print("Debug: Error fetching chat data: \(error)")
                     }
                 }
-            }
-            
-            dispatchGroup.notify(queue: .main) {
-                print("Debug: Updating chat previews, count: \(newPreviews.count)")
-                self.chatPreviews = newPreviews.sorted { ($0.timestamp ?? 0) > ($1.timestamp ?? 0) }
+                
+                // Update UI on main thread after all chats are processed
+                await MainActor.run {
+//                    print("Debug: Updating chat previews, count: \(newPreviews.count)")
+                    let sortedPreviews = newPreviews.sorted { ($0.timestamp ?? 0) > ($1.timestamp ?? 0) }
+                    self.updateCoreData(with: sortedPreviews)
+                    self.chatPreviews = sortedPreviews
+                }
             }
         }
     }
@@ -126,5 +192,6 @@ class ChatListViewModel: ObservableObject {
         if let handle = userChatsHandle {
             database.reference().child("user_chats").child(currentUserId).removeObserver(withHandle: handle)
         }
+        autoRefreshTimer?.invalidate()
     }
 }
