@@ -57,10 +57,24 @@ struct ChatPreviewRow: View {
     
     var body: some View {
         HStack {
-            // You can add user avatar here if you have one
-            Circle()
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: 50, height: 50)
+            // Profile Picture
+            if let photoURL = preview.otherUserPhotoURL, let url = URL(string: photoURL) {
+                AsyncImage(url: url) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } placeholder: {
+                    Image(systemName: "person.circle.fill")
+                        .resizable()
+                }
+                .frame(width: 40, height: 40)
+                .clipShape(Circle())
+            } else {
+                Image(systemName: "person.circle.fill")
+                    .resizable()
+                    .frame(width: 40, height: 40)
+                    .foregroundColor(.gray)
+            }
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(preview.username)
@@ -108,6 +122,7 @@ struct ChatPreviewRow: View {
 struct ChatPreview: Identifiable {
     let id: String
     let otherUserId: String
+    let otherUserPhotoURL: String?
     let username: String
     let lastMessage: String
     let timestamp: TimeInterval?

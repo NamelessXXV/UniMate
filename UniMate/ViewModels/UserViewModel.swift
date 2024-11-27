@@ -83,29 +83,13 @@ class UserViewModel: ObservableObject {
         if let photo = photo {
             print("📸 Attempting to upload new profile photo")
             do {
-                let imageData = photo.jpegData(compressionQuality: 0.7)
-                
-                if let imageData = photo.jpegData(compressionQuality: 0.7) {
-                    // Create a unique path for the image
-                    let storageRef = Storage.storage().reference()
-                    let imagePath = "user_photos/\(userId)/profile_\(UUID().uuidString).jpg"
-                    let imageRef = storageRef.child(imagePath)
-                    
-                    print("📤 Uploading image to path: \(imagePath)")
-                    
-                    // Upload the image
-                    let metadata = StorageMetadata()
-                    metadata.contentType = "image/jpeg"
-                    
-                    _ = try await imageRef.putDataAsync(imageData, metadata: metadata)
-                    photoURL = try await imageRef.downloadURL().absoluteString
-                    print("✅ Successfully uploaded image, URL: \(photoURL ?? "nil")")
-                }
+                photoURL = try await uploadImageToCloudinary(photo)
+                print("✅ Successfully uploaded image, URL: \(photoURL ?? "nil")")
             } catch {
                 print("⚠️ Failed to upload image: \(error), continuing with other updates")
-                // Continue execution despite photo upload failure
             }
         }
+        
         
         // 2. Update Firestore document
         print("📝 Preparing user data update")
@@ -126,5 +110,74 @@ class UserViewModel: ObservableObject {
             print("❌ Failed to update Firestore document: \(error)")
             throw error
         }
+    }
+    
+    private func uploadImageToCloudinary(_ image: UIImage) async throws -> String {
+        guard let imageData = image.jpegData(compressionQuality: 0.7) else {
+            throw NSError(domain: "ImageUpload", code: 400,
+                          userInfo: [NSLocalizedDescriptionKey: "Failed to convert image to data"])
+        }
+        
+        // Create unique filename
+        let filename = "profile_\(UUID().uuidString)"
+        
+        // Create form data
+        let boundary = UUID().uuidString
+        var body = Data()
+        
+        // Add upload preset to form data
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"upload_preset\"\r\n\r\n".data(using: .utf8)!)
+        body.append("\(CloudinaryConfig.uploadPreset)\r\n".data(using: .utf8)!)
+        
+        // Add public_id (filename) to form data
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"public_id\"\r\n\r\n".data(using: .utf8)!)
+        body.append("\(filename)\r\n".data(using: .utf8)!)
+        
+        // Add file data to form data
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(filename).jpg\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
+        body.append(imageData)
+        body.append("\r\n".data(using: .utf8)!)
+        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
+        
+        // Create upload request
+        guard let url = URL(string: CloudinaryConfig.uploadURL) else {
+            throw NSError(domain: "ImageUpload", code: 400,
+                          userInfo: [NSLocalizedDescriptionKey: "Invalid upload URL"])
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        request.httpBody = body
+        
+        // Perform upload
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            throw NSError(domain: "ImageUpload", code: 500,
+                          userInfo: [NSLocalizedDescriptionKey: "Upload failed"])
+        }
+        
+        guard let jsonResponse = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let secureUrl = jsonResponse["secure_url"] as? String else {
+            throw NSError(domain: "ImageUpload", code: 500,
+                          userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+        }
+        
+        return secureUrl
+    }
+}
+
+struct CloudinaryConfig {
+    static let cloudName = "shekyc" // Replace with your cloud name
+    static let uploadPreset = "unimate" // Replace with your preset name
+    
+    static var uploadURL: String {
+        return "https://api.cloudinary.com/v1_1/\(cloudName)/image/upload"
     }
 }

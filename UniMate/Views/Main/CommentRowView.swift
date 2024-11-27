@@ -1,4 +1,9 @@
-// Views/Forum/CommentRowView.swift
+//
+//  CommentRowView.swift
+//  UniMate
+//
+//  Created by Sheky Cheung on 22/11/2024.
+//
 import SwiftUI
 
 struct CommentRowView: View {
@@ -46,28 +51,3 @@ struct CommentRowView: View {
         }
     }
 }
-//struct CommentRowView: View {
-//    let comment: Comment
-//    let username: String
-//    
-//    var body: some View {
-//        VStack(alignment: .leading, spacing: 8) {
-//            Text(comment.content)
-//                .font(.body)
-//            
-//            HStack {
-//                Text(username)
-//                    .font(.caption)
-//                    .foregroundColor(.blue)
-//                
-//                Text("•")
-//                    .foregroundColor(.gray)
-//                
-//                Text(comment.timestamp, style: .relative)
-//                    .font(.caption)
-//                    .foregroundColor(.gray)
-//            }
-//        }
-//        .padding(.vertical, 4)
-//    }
-//}

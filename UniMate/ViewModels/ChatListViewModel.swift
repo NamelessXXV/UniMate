@@ -48,6 +48,7 @@ class ChatListViewModel: ObservableObject {
                 ChatPreview(
                     id: entity.id ?? "",
                     otherUserId: entity.otherUserId ?? "",
+                    otherUserPhotoURL: entity.otherUserPhotoURL ?? "",
                     username: entity.username ?? "",
                     lastMessage: entity.lastMessage ?? "",
                     timestamp: entity.timestamp,
@@ -73,6 +74,7 @@ class ChatListViewModel: ObservableObject {
             let entity = ChatPreviewEntity(context: context)
             entity.id = preview.id
             entity.otherUserId = preview.otherUserId
+            entity.otherUserPhotoURL = preview.otherUserPhotoURL
             entity.username = preview.username
             entity.lastMessage = preview.lastMessage
             entity.timestamp = preview.timestamp ?? 0
@@ -138,6 +140,7 @@ class ChatListViewModel: ObservableObject {
                         let otherUserId = participants.keys.first { $0 != self.currentUserId } ?? ""
 //                        print("Debug: Other user ID: \(otherUserId)")
                         
+                        let otherUserPhotoURL = try await FirebaseService.shared.fetchUser(userId: otherUserId).photoURL
                         let messages = chatData["messages"] as? [String: Any] ?? [:]
                         let sortedMessages = messages.values
                             .compactMap { $0 as? [String: Any] }
@@ -154,6 +157,7 @@ class ChatListViewModel: ObservableObject {
                             let preview = ChatPreview(
                                 id: chatId,
                                 otherUserId: otherUserId,
+                                otherUserPhotoURL: otherUserPhotoURL,
                                 username: user.username,
                                 lastMessage: lastMessage?["content"] as? String ?? "No messages",
                                 timestamp: lastMessage?["timestamp"] as? TimeInterval,
@@ -165,6 +169,7 @@ class ChatListViewModel: ObservableObject {
                             let preview = ChatPreview(
                                 id: chatId,
                                 otherUserId: otherUserId,
+                                otherUserPhotoURL: otherUserPhotoURL,
                                 username: "User \(otherUserId.prefix(6))",
                                 lastMessage: lastMessage?["content"] as? String ?? "No messages",
                                 timestamp: lastMessage?["timestamp"] as? TimeInterval,

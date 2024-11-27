@@ -42,7 +42,7 @@ struct LoginView: View {
                         Button("Forgot password?") {
                             // Add forgot password action
                         }
-                        .foregroundColor(.green)
+                        .foregroundColor(.blue)
                         .font(.footnote)
                     }
                     .padding(.horizontal)
@@ -55,7 +55,7 @@ struct LoginView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.green)
+                            .background(Color.blue)
                             .cornerRadius(8)
                     }
                     .padding(.horizontal)
@@ -65,7 +65,7 @@ struct LoginView: View {
                         Text("Not a member?")
                             .foregroundColor(.gray)
                         NavigationLink("Register now", destination: SignUpView())
-                            .foregroundColor(.green)
+                            .foregroundColor(.blue)
                     }
                     .font(.footnote)
                 }

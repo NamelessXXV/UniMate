@@ -20,7 +20,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		66C8F7D12CF43C4500AAA66F /* Exceptions for "UniMate" folder in "UniMate" target */ = {
+		66C8F8072CF7C05000AAA66F /* Exceptions for "UniMate" folder in "UniMate" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -33,7 +33,7 @@
 		5BBDAA342CEF440A0060C948 /* UniMate */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				66C8F7D12CF43C4500AAA66F /* Exceptions for "UniMate" folder in "UniMate" target */,
+				66C8F8072CF7C05000AAA66F /* Exceptions for "UniMate" folder in "UniMate" target */,
 			);
 			path = UniMate;
 			sourceTree = "<group>";
