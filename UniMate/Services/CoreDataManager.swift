@@ -2,9 +2,11 @@
 //  CoreDataManager.swift
 //  UniMate
 //
-//  Created by Sheky Cheung on 28/11/2024.
+//  Created by Cheung Yan Shek 3036065575 on 28/11/2024.
 //
 import CoreData
+
+// CoreDataManager class for locally caching chat previews
 class CoreDataManager {
     static let shared = CoreDataManager()
     private let container: NSPersistentContainer

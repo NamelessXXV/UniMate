@@ -2,11 +2,12 @@
 //  ChatViewModel.swift
 //  UniMate
 //
-//  Created by Sheky Cheung on 25/11/2024.
+//  Created by Cheung Yan Shek 3036065575 on 25/11/2024.
 //
 import Firebase
 import FirebaseDatabase
 
+// ViewModel to handle ChatView backend
 class ChatViewModel: ObservableObject {
     @Published var messages: [Message] = []
     @Published var newMessage: String = ""
@@ -32,6 +33,7 @@ class ChatViewModel: ObservableObject {
         observeMessages()
     }
     
+    // Function for initializing new chat
     private func setupChat() {
         let chatRef = database.reference().child("chats").child(chatId)
         
@@ -41,11 +43,16 @@ class ChatViewModel: ObservableObject {
             
             // Only create the chat if it doesn't exist
             if !snapshot.exists() {
-                let participantsRef = chatRef.child("participants")
-                participantsRef.updateChildValues([
-                    self.currentUserId: true,
-                    self.otherUserId: true
-                ]) { error, _ in
+                // First create the chat with participants
+                let chatData: [String: Any] = [
+                    "participants": [
+                        self.currentUserId: true,
+                        self.otherUserId: true
+                    ]
+                ]
+                
+                // Create chat first, then update user_chats
+                chatRef.setValue(chatData) { error, _ in
                     if let error = error {
                         DispatchQueue.main.async {
                             self.error = error.localizedDescription
@@ -53,15 +60,25 @@ class ChatViewModel: ObservableObject {
                         return
                     }
                     
-                    // Add to user_chats for both users
-                    let userChatsRef = self.database.reference().child("user_chats")
-                    userChatsRef.child(self.currentUserId).updateChildValues([self.chatId: true])
-                    userChatsRef.child(self.otherUserId).updateChildValues([self.chatId: true])
+                    // After chat is created, update user_chats
+                    let userChatsUpdates: [String: Any] = [
+                        "/user_chats/\(self.currentUserId)/\(self.chatId)": true,
+                        "/user_chats/\(self.otherUserId)/\(self.chatId)": true
+                    ]
+                    
+                    self.database.reference().updateChildValues(userChatsUpdates) { error, _ in
+                        if let error = error {
+                            DispatchQueue.main.async {
+                                self.error = error.localizedDescription
+                            }
+                        }
+                    }
                 }
             }
         }
     }
     
+    // Function to fetch the other users' information
     private func fetchOtherUser() {
         Task {
             do {
@@ -77,6 +94,7 @@ class ChatViewModel: ObservableObject {
         }
     }
     
+    // Function to fetch messages from Firebase RTDB
     func observeMessages() {
         messagesHandle = messagesRef?.observe(.childAdded) { [weak self] snapshot in
             guard let messageData = snapshot.value as? [String: Any] else { return }
@@ -106,6 +124,7 @@ class ChatViewModel: ObservableObject {
         messagesRef?.child(messageId).updateChildValues(["isRead": true])
     }
     
+    // Function to send messages to Firebase RTDB
     func sendMessage() {
         guard !newMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         

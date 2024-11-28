@@ -2,7 +2,7 @@
 //  CommentRowView.swift
 //  UniMate
 //
-//  Created by Sheky Cheung on 22/11/2024.
+//  Created by Cheung Yan Shek 3036065575 on 22/11/2024.
 //
 import SwiftUI
 

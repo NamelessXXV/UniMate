@@ -2,7 +2,7 @@
 //  LocationService.swift
 //  UniMate
 //
-//  Created by Sheky Cheung on 22/11/2024.
+//  Created by Cheung Yan Shek 3036065575 on 22/11/2024.
 //
 
 import CoreLocation
@@ -11,6 +11,7 @@ import FirebaseDatabase
 import FirebaseAuth
 import SwiftUI
 
+// LocationService class to initialize CoreLocation locationmanager
 class LocationService: NSObject, ObservableObject {
     private let locationManager: CLLocationManager
     private let database = Database.database(url: "https://unimate-demo-default-rtdb.asia-southeast1.firebasedatabase.app").reference()
@@ -56,6 +57,7 @@ class LocationService: NSObject, ObservableObject {
         locationTimer = nil
     }
     
+    // Function to upload location to Firebase RTDB
     private func uploadLocation() {
         guard let location = currentLocation,
               let uid = Auth.auth().currentUser?.uid else { return }
@@ -75,6 +77,7 @@ class LocationService: NSObject, ObservableObject {
         locationRef.setValue(locationData)
     }
     
+    // Function to set user inactive
     private func setUserInactive() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let locationRef = database.child("live_locations").child(uid)

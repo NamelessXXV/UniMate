@@ -2,13 +2,14 @@
 //  LocationView.swift
 //  UniMate
 //
-//  Created by Sheky Cheung on 22/11/2024.
+//  Created by Cheung Yan Shek 3036065575 on 22/11/2024.
 //
 import SwiftUI
 import FirebaseDatabase
 import FirebaseAuth
 import CoreLocation
 
+// ViewModel to handle most of the MatchingView backend
 class LocationViewModel: NSObject, ObservableObject {
     @Published var currentLocation: CLLocation?
     @Published var nearbyUsers: [UserLocation] = []
@@ -42,6 +43,7 @@ class LocationViewModel: NSObject, ObservableObject {
         startPeriodicUpdates()
     }
     
+    // Start periodic updates for location
     private func startPeriodicUpdates() {
         // Start timer for updating timestamp in Firebase
         updateTimer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { [weak self] _ in
@@ -73,6 +75,7 @@ class LocationViewModel: NSObject, ObservableObject {
         }
     }
     
+    // Major function to load users on the map
     private func scanNearbyUsers() {
         ref.child("live_locations").observeSingleEvent(of: .value) { [weak self] snapshot in
             guard let self = self,
@@ -117,6 +120,7 @@ class LocationViewModel: NSObject, ObservableObject {
         ref.child("live_locations").removeAllObservers()
     }
     
+    // Function to update currentUser location
     private func updateLocation(_ location: CLLocation, timestampOnly: Bool = false) {
         guard let userId = Auth.auth().currentUser?.uid else { return }
         

@@ -2,13 +2,14 @@
 //  ChatListViewModel.swift
 //  UniMate
 //
-//  Created by Sheky Cheung on 25/11/2024.
+//  Created by Cheung Yan Shek 3036065575 on 25/11/2024.
 //
 
 import Firebase
 import FirebaseAuth
 import CoreData
 
+// ViewModel to handle all ChatListView backend functions
 class ChatListViewModel: ObservableObject {
     @Published var chatPreviews: [ChatPreview] = []
     @Published var error: String? = nil
@@ -25,6 +26,7 @@ class ChatListViewModel: ObservableObject {
         loadCachedChats()
         loadChats()
         setupAutoRefresh()
+        observeNewChats()
     }
     
     func setupAutoRefresh() {
@@ -38,6 +40,17 @@ class ChatListViewModel: ObservableObject {
         }
     }
     
+    private func observeNewChats() {
+        let userChatsRef = database.reference().child("user_chats").child(currentUserId)
+        userChatsRef.observe(.childAdded) { [weak self] snapshot in
+            guard let self = self,
+                  !self.chatPreviews.contains(where: { $0.id == snapshot.key }) else { return }
+            
+            self.loadChats()
+        }
+    }
+    
+    // Function to load cached chats from CoreData
     private func loadCachedChats() {
         let fetchRequest: NSFetchRequest<ChatPreviewEntity> = ChatPreviewEntity.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \ChatPreviewEntity.timestamp, ascending: false)]
@@ -63,6 +76,7 @@ class ChatListViewModel: ObservableObject {
         }
     }
     
+    // Function to cache chats to CoreData
     private func updateCoreData(with newPreviews: [ChatPreview]) {
         let context = coreDataManager.viewContext
         
@@ -84,6 +98,7 @@ class ChatListViewModel: ObservableObject {
         coreDataManager.saveContext()
     }
     
+    // Major function to load chats from Firebase RTDB
     func loadChats() {
         guard !currentUserId.isEmpty else {
             self.error = "No authenticated user"
