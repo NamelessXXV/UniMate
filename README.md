@@ -1,15 +1,15 @@
-UniMate - iOS Application Project Overview
+UniMate - iOS Application Project Overview 
 1. Core Features
 - Authentication System
   - HKU Email Domain (@connect.hku.hk) verification
   - Login Methods:
     - Face ID (default if allowed)
-    - Password (no specific requirements)
+    - Password (no specific requirements) ✅
     - Password reset via email
   - No Touch ID support
 
 - Chat System
-  - Individual and Group Chats
+  - Individual ✅and Group Chats
     - Max 15 groups per user creation limit
     - No member limit in groups
     - All media types allowed
@@ -22,8 +22,8 @@ UniMate - iOS Application Project Overview
     
 - Match System (400m Radius)
   - User Display:
-    - Shows all users within radius
-    - Displays name and tags
+    - Shows all users within radius✅
+    - Displays name and tags✅
     - No online/offline status
   - Connection System:
     - Connection requests appear as messages in chat
@@ -34,7 +34,7 @@ UniMate - iOS Application Project Overview
 - Tags System
   - Maximum 6 tags per user
   - Tag Rules:
-    - 30 character limit
+    - 30 character limit✅
     - Case insensitive
     - Spaces replaced with underscores
     - Emojis allowed (count toward character limit)
@@ -49,10 +49,10 @@ UniMate - iOS Application Project Overview
     - Course discussions
     - News about school
   - Features:
-    - Multiple category posting
-    - Required: title and content
+    - Multiple category posting✅
+    - Required: title and content✅
     - Optional: additional media
-    - Like, comment, save functions
+    - Like, comment, save functions✅
     - Keyword search in titles
   - Sections:
     - Latest posts
@@ -60,10 +60,10 @@ UniMate - iOS Application Project Overview
     
 - Profile
   - Information:
-    - Username (non-unique, changeable)
-    - Profile picture
+    - Username (non-unique, changeable)✅
+    - Profile picture✅
     - Academic status (undergraduate/postgraduate/PhD)
-    - Tags
+    - Tags✅
   - Privacy:
     - Profile visible to connected users
     - Anyone within range can send requests
