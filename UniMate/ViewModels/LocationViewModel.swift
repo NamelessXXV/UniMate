@@ -137,15 +137,13 @@ class LocationViewModel: NSObject, ObservableObject {
                 "longitude": location.coordinate.longitude
             ]
             
-            // First update with default username and user ID
-//            ref.child("live_locations").child(userId).updateChildValues(locationData)
-            
-            // Then update username and photo URL asynchronously
+            // Update username and photo URL asynchronously
             Task {
                 do {
                     let user = try await FirebaseService.shared.fetchUser(userId: userId)
                     let username = user.username
                     locationData["username"] = username
+                    locationData["photoURL"] = user.photoURL ?? ""
                     
                     try await ref.child("live_locations").child(userId).updateChildValues(locationData)
                 } catch {

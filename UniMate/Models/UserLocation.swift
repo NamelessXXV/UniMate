@@ -42,7 +42,7 @@ extension User {
         UserLocation(
             id: id,
             username: username,
-            photoURL: nil, // Add photo URL if available
+            photoURL: photoURL,
             location: UserLocation.LocationCoordinate(
                 latitude: coordinate.latitude,
                 longitude: coordinate.longitude
