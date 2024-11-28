@@ -1,4 +1,6 @@
 // FirebaseService.swift
+// Created by Wu Kwun To
+// UID: 3036050726
 import Firebase
 import FirebaseAuth
 import FirebaseFirestore
@@ -10,7 +12,7 @@ class FirebaseService {
     
     private init() {}
     
-    // MARK: - Authentication Methods
+    // MARK: - Auth
     func signIn(email: String, password: String) async throws -> User {
         do {
             let result = try await auth.signIn(withEmail: email, password: password)
@@ -67,7 +69,7 @@ class FirebaseService {
         try auth.signOut()
     }
     
-    // MARK: - User Methods
+    // MARK: - User
     func fetchUser(userId: String) async throws -> User {
         let document = try await db.collection("users").document(userId).getDocument()
         guard document.exists else {
@@ -124,7 +126,7 @@ class FirebaseService {
         return username
     }
     
-    // MARK: - Post Methods
+    // MARK: - Post
     func createPostWithCategory(title: String, content: String, userId: String, category: String) async throws -> Post {
         let db = Firestore.firestore()
         let postRef = db.collection("posts").document()
@@ -188,7 +190,7 @@ class FirebaseService {
         ])
     }
     
-    // MARK: - Likes Methods
+    // MARK: - Likes
     func toggleLike(postId: String, userId: String, isLiked: Bool) async throws {
         if isLiked {
             try await likePost(postId: postId, userId: userId)
@@ -258,7 +260,7 @@ class FirebaseService {
         }
     }
     
-    // MARK: - Comments Methods
+    // MARK: - Comments
     func addComment(postId: String, userId: String, content: String) async throws {
         let commentRef = db.collection("posts").document(postId)
             .collection("comments").document()

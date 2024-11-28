@@ -1,4 +1,6 @@
 // Views/Main/ForumView.swift
+// Created by Wu Kwun To
+// UID: 3036050726
 import SwiftUI
 
 struct ForumView: View {

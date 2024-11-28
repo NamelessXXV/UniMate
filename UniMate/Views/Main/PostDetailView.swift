@@ -1,4 +1,6 @@
 // Views/Forum/PostDetailView.swift
+// Created by Wu Kwun To
+// UID: 3036050726
 import SwiftUI
 
 struct PostDetailView: View {

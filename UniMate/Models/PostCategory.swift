@@ -1,4 +1,5 @@
-
+// Created by Wu Kwun To
+// UID: 3036050726
 // Models/PostCategory.swift
 import Foundation
 

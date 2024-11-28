@@ -1,4 +1,6 @@
 // Views/Authentication/LoginView.swift
+// Created by Wu Kwun To
+// UID: 3036050726
 import SwiftUI
 
 struct LoginView: View {
@@ -8,13 +10,13 @@ struct LoginView: View {
     @State private var showSignUp = false
     
     var body: some View {
-        VStack(spacing: 0) { // Changed spacing to 0
+        VStack(spacing: 0) { 
             // Image section
-            Image("hku") // Add your image to Assets.xcassets
+            Image("hku")
                 .resizable()
                 .scaledToFill()
                 .frame(maxWidth: .infinity)
-                .frame(height: 300) // Adjust height as needed
+                .frame(height: 300)
                 .clipped()
             
             // Content section
@@ -36,16 +38,6 @@ struct LoginView: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding(.horizontal)
                     
-                    // Forgot password link
-                    HStack {
-                        Spacer()
-                        Button("Forgot password?") {
-                            // Add forgot password action
-                        }
-                        .foregroundColor(.blue)
-                        .font(.footnote)
-                    }
-                    .padding(.horizontal)
                     
                     // Login button
                     Button(action: {
@@ -81,6 +73,6 @@ struct LoginView: View {
             
             Spacer()
         }
-        .ignoresSafeArea(.all, edges: .top) // This makes the image extend to the top edge
+        .ignoresSafeArea(.all, edges: .top)
     }
 }

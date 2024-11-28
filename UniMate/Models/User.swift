@@ -1,4 +1,6 @@
 // Models/User.swift
+// Created by Wu Kwun To
+// UID: 3036050726
 import Foundation
 
 struct User: Codable, Identifiable {

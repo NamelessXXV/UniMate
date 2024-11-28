@@ -1,3 +1,5 @@
+// Created by Wu Kwun To
+// UID: 3036050726
 import Foundation
 import FirebaseFirestore
 
@@ -7,14 +9,13 @@ struct Post: Identifiable, Codable {
     var title: String
     var content: String
     let timestamp: Date
-    let category: String // Changed from PostCategory to String
+    let category: String
     
-    // Add a computed property to convert String to PostCategory
     var postCategory: PostCategory {
         PostCategory(rawValue: category) ?? .general
     }
+
     
-    // Add a custom initializer
     init(id: String? = nil, authorId: String, title: String, content: String, timestamp: Date, category: String) {
         self.id = id
         self.authorId = authorId

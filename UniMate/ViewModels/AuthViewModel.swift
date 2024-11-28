@@ -1,4 +1,6 @@
 // ViewModels/AuthViewModel.swift
+// Created by Wu Kwun To
+// UID: 3036050726
 import Foundation
 import FirebaseAuth
 import FirebaseFirestore

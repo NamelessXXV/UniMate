@@ -1,4 +1,6 @@
 // Views/Authentication/SignUpView.swift
+// Created by Wu Kwun To
+// UID: 3036050726
 import SwiftUI
 
 struct SignUpView: View {
@@ -53,9 +55,4 @@ struct SignUpView: View {
     }
 }
 
-#Preview {
-    NavigationStack {
-        SignUpView()
-            .environmentObject(AuthViewModel())
-    }
-}
+
