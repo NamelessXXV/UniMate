@@ -1,8 +1,7 @@
 //
 //  UserViewModel.swift
-//  UniMate
-//
-//  Created by Cheung Yan Shek 3036065575 on 26/11/2024.
+//  Ma Lok Yan Paris
+//  3036067963
 //
 import SwiftUI
 import Firebase
@@ -74,7 +73,6 @@ class UserViewModel: ObservableObject {
         print("🔄 Starting profile update")
         
         guard let userId = Auth.auth().currentUser?.uid else {
-            print("❌ User not authenticated")
             throw NSError(domain: "FirebaseService", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])
         }
         
@@ -84,22 +82,20 @@ class UserViewModel: ObservableObject {
             print("📸 Attempting to upload new profile photo")
             do {
                 photoURL = try await uploadImageToCloudinary(photo)
-                print("✅ Successfully uploaded image, URL: \(photoURL ?? "nil")")
             } catch {
-                print("⚠️ Failed to upload image: \(error), continuing with other updates")
+                print("Failed to upload image: \(error)")
             }
         }
         
         
         // 2. Update Firestore document
-        print("📝 Preparing user data update")
         let userData: [String: Any] = [
             "email": email,
             "username": username,
             "fullName": fullName ?? NSNull(),
             "bio": bio ?? NSNull(),
             "tags": tags ?? [],
-            "photoURL": photoURL ?? (user?.photoURL ?? NSNull()), // Keep existing photoURL if upload failed
+            "photoURL": photoURL ?? (user?.photoURL ?? NSNull()), // failsafe for upload failure
             "updatedAt": FieldValue.serverTimestamp()
         ]
         
@@ -174,8 +170,8 @@ class UserViewModel: ObservableObject {
 }
 
 struct CloudinaryConfig {
-    static let cloudName = "shekyc" // Replace with your cloud name
-    static let uploadPreset = "unimate" // Replace with your preset name
+    static let cloudName = "shekyc"
+    static let uploadPreset = "unimate"
     
     static var uploadURL: String {
         return "https://api.cloudinary.com/v1_1/\(cloudName)/image/upload"

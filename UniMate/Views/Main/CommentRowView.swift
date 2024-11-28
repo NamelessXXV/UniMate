@@ -1,9 +1,6 @@
-//
-//  CommentRowView.swift
-//  UniMate
-//
-//  Created by Cheung Yan Shek 3036065575 on 22/11/2024.
-//
+// CommentRowView.swift
+// Wong Kai Ching 3036067884
+
 import SwiftUI
 
 struct CommentRowView: View {

@@ -8,7 +8,7 @@ struct NewPostView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @Binding var isPresented: Bool
     @Binding var title: String
-    @Binding var content: String
+    @State var content: String
     @State private var selectedPostCategory: PostCategory = .general // Renamed to be clear this is for new post
     
     var body: some View {
@@ -16,8 +16,16 @@ struct NewPostView: View {
             Form {
                 Section(header: Text("Post Details")) {
                     TextField("Title", text: $title)
-                    TextEditor(text: $content)
-                        .frame(height: 200)
+                    ZStack(alignment: .topLeading) {
+                        if content.isEmpty {
+                            Text("Write something...")
+                                .foregroundColor(Color(UIColor.placeholderText))
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 10)
+                        }
+                        TextEditor(text: $content)
+                            .frame(height: 200)
+                    }
                 }
                 
                 Section(header: Text("Category")) {
@@ -48,6 +56,8 @@ struct NewPostView: View {
                 }
                 .disabled(title.isEmpty || content.isEmpty)
             )
+        }.onTapGesture {
+            UIApplication.shared.endEditing()
         }
     }
 }

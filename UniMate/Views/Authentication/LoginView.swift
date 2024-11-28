@@ -74,5 +74,8 @@ struct LoginView: View {
             Spacer()
         }
         .ignoresSafeArea(.all, edges: .top)
+        .onTapGesture {
+                    UIApplication.shared.endEditing()
+                }
     }
 }

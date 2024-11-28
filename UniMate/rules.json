@@ -1,10 +1,16 @@
+// Firebase RTDB rules
+
 {
   "rules": {
     "live_locations": {
-      ".read": "auth != null",  // Allow reading the entire locations node
+      ".read": "auth != null",
       "$uid": {
         ".write": "auth != null && auth.uid == $uid",
-        ".validate": "newData.hasChildren(['location', 'lastUpdated', 'username', 'isActive'])",
+        ".validate": "newData.hasChildren(['id', 'location', 'lastUpdated', 'username', 'isActive'])",
+        
+        "id": {
+          ".validate": "newData.isString() && newData.val() == auth.uid"
+        },
         
         "location": {
           ".validate": "newData.hasChildren(['latitude', 'longitude'])",
@@ -17,11 +23,11 @@
         },
         
         "lastUpdated": {
-          ".validate": "newData.isNumber()"
+          ".validate": "newData.isNumber() && (!data.exists() || newData.val() > data.val())"
         },
         
         "username": {
-          ".validate": "newData.isString() && newData.val().length > 0"
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 50"
         },
         
         "isActive": {
@@ -29,7 +35,11 @@
         },
         
         "photoURL": {
-          ".validate": "!newData.exists() || newData.isString()"
+          ".validate": "!newData.exists() || (newData.isString() && newData.val().matches(/^https?:\\/\\/.+/))"
+        },
+        
+        "$other": {
+          ".validate": false
         }
       }
     },
@@ -47,8 +57,14 @@
     },
     "chats": {
       "$chatId": {
-        ".read": "auth != null && data.child('participants').child(auth.uid).exists()",
-        ".write": "auth != null && ((!data.exists() && newData.child('participants').child(auth.uid).exists()) || data.child('participants').child(auth.uid).exists())",
+        ".read": "auth != null && (
+          !data.exists() ||
+          data.child('participants').child(auth.uid).exists()
+        )",
+        ".write": "auth != null && (
+          !data.exists() ||
+          data.child('participants').child(auth.uid).exists()
+        )",
         "participants": {
           "$userId": {
             ".validate": "newData.isBoolean()"
@@ -79,9 +95,12 @@
     "user_chats": {
       "$uid": {
         ".read": "auth != null && auth.uid == $uid",
-        ".write": "auth != null && (auth.uid == $uid || root.child('chats').child(newData.val()).child('participants').child(auth.uid).exists())",
         "$chatId": {
-          ".validate": "newData.isBoolean() && root.child('chats').child($chatId).exists()"
+          ".write": "auth != null && (
+            auth.uid == $uid ||
+            root.child('chats').child($chatId).child('participants').child(auth.uid).exists()
+          )",
+          ".validate": "newData.isBoolean()"
         }
       }
     }

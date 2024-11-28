@@ -13,6 +13,7 @@ struct ForumView: View {
     @State private var showingComments = false
     @State private var newCommentContent = ""
     
+    
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
@@ -23,12 +24,8 @@ struct ForumView: View {
                 categoryFilter
                 
                 // Main content
-                Group {
-                    if viewModel.isLoading {
-                        ProgressView()
-                    } else {
-                        postsList
-                    }
+                NavigationStack {
+                    postsList
                 }
             }
             .navigationTitle("Forum")
@@ -48,6 +45,8 @@ struct ForumView: View {
             Task {
                 await viewModel.fetchPosts()
             }
+        }.onTapGesture {
+            UIApplication.shared.endEditing()
         }
     }
     
@@ -118,7 +117,7 @@ struct ForumView: View {
             viewModel: viewModel,
             isPresented: $showingNewPost,
             title: $newPostTitle,
-            content: $newPostContent
+            content: newPostContent
         )
     }
     

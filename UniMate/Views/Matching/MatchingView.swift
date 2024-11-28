@@ -37,7 +37,6 @@ struct MatchingView: View {
                     .fontWeight(.bold)
                     .frame(maxWidth: .infinity)
                     .padding(.top, 40)
-//                    .background(Color.white.opacity(0.9))
                     .shadow(color: Color.black.opacity(0.4), radius: 7, x: 0, y: 2)
                 
                 Spacer()

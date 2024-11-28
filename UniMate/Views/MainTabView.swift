@@ -1,6 +1,8 @@
-// Views/Main/MainTabView.swift
-// Created by Wu Kwun To
-// UID: 3036050726
+//
+//  MainTabView.swift
+//  Ma Lok Yan Paris
+//  3036067963
+//
 import SwiftUI
 import FirebaseAuth
 
@@ -13,7 +15,7 @@ struct MainTabView: View {
         TabView {
             ForumView()
                 .tabItem {
-                    Label("Forum", systemImage: "bubble.left.and.bubble.right")  // or "text.bubble"
+                    Label("Forum", systemImage: "bubble.left.and.bubble.right")
                 }
             NavigationStack {
                 MatchingView()
@@ -24,7 +26,7 @@ struct MainTabView: View {
 
             ChatListView()
                 .tabItem {
-                    Label("Chats", systemImage: "message.and.waveform")  // or "message.and.waveform"
+                    Label("Chats", systemImage: "message.and.waveform")
                 }
             
             if let userId = Auth.auth().currentUser?.uid {
@@ -40,7 +42,3 @@ struct MainTabView: View {
     }
 }
 
-//#Preview {
-//    MainTabView()
-//        .environmentObject(AuthViewModel())
-//}

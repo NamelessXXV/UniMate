@@ -19,7 +19,7 @@ class LocationViewModel: NSObject, ObservableObject {
     private let ref: DatabaseReference
     private var updateTimer: Timer?
     private var scanTimer: Timer?
-    private let updateInterval: TimeInterval = 10 // 10 seconds
+    private let updateInterval: TimeInterval = 5
     private var user: User?
     
     override init() {
@@ -45,11 +45,11 @@ class LocationViewModel: NSObject, ObservableObject {
     
     // Start periodic updates for location
     private func startPeriodicUpdates() {
-        // Start timer for updating timestamp in Firebase
+        // Start timer for updating timestamp and location in Firebase
         updateTimer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { [weak self] _ in
             guard let self = self,
                   let location = self.currentLocation else { return }
-            self.updateLocation(location, timestampOnly: true)
+            self.updateLocation(location, timestampOnly: false)
         }
         
         // Start timer for scanning other users
@@ -92,8 +92,8 @@ class LocationViewModel: NSObject, ObservableObject {
                     return nil
                 }
                 
-                // Filter out inactive or stale locations (older than 30 seconds)
-                if !isActive || (currentTime - lastUpdatedTimestamp > 15000) {
+                // Filter out inactive users
+                if currentTime - lastUpdatedTimestamp > 30000 {
                     return nil
                 }
                 

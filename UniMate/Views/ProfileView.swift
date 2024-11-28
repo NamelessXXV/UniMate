@@ -1,8 +1,7 @@
 //
 //  ProfileView.swift
-//  UniMate
-//
-//  Created by Cheung Yan Shek 3036065575 on 22/11/2024.
+//  Ma Lok Yan Paris
+//  3036067963
 //
 import SwiftUI
 import FirebaseAuth
@@ -24,12 +23,12 @@ struct ProfileView: View {
     }
     
     var body: some View {
-        Group {
+        
+        NavigationStack {
             if let user = viewModel.user {
                 ScrollView {
-                    VStack(spacing: 20) {
-                        // Add some padding at the top
-                        Color.clear.frame(height: 20)  // This ensures space at the top
+                    VStack(spacing: 10) {
+                        Color.clear.frame(height: 20)
                         
                         // Top Bar
                         HStack {
@@ -66,7 +65,7 @@ struct ProfileView: View {
                             }
                         }
                         
-                        // Profile Image
+                        // Profile editing view
                         if viewModel.isEditing {
                             Button(action: { showImagePicker = true }) {
                                 if let selected = selectedImage {
@@ -91,7 +90,7 @@ struct ProfileView: View {
                                 }
                             }
                         } else {
-                            // Regular profile image display
+                            // Normal profile view
                             if let photoURL = user.photoURL {
                                 AsyncImage(url: URL(string: photoURL)) { image in
                                     image
@@ -123,15 +122,17 @@ struct ProfileView: View {
                                         .textFieldStyle(RoundedBorderTextFieldStyle())
                                 }
                             } else {
-                                // Display Mode
+                                // Normal profile view
                                 Text(user.username)
                                     .font(.title)
                                     .bold()
+                                    .frame(maxWidth: .infinity, alignment: .center)
                                 
-                                if isCurrentUser {  // Hide email and full name if not current user
+                                if isCurrentUser {  // only show email and full name if current user
                                     Text(user.email)
                                         .font(.subheadline)
                                         .foregroundColor(.gray)
+                                        .frame(maxWidth: .infinity, alignment: .center)
                                     if let fullName = user.fullName {
                                         Text(fullName)
                                             .font(.title2)
@@ -145,7 +146,7 @@ struct ProfileView: View {
                                                 Text(tag)
                                                     .padding(.horizontal, 12)
                                                     .padding(.vertical, 6)
-                                                    .background(Color.blue.opacity(0.1))
+                                                    .background(Color.blue.opacity(0.3))
                                                     .cornerRadius(15)
                                             }
                                         }
@@ -193,6 +194,11 @@ struct ProfileView: View {
                                 }
                                 .padding(.top, 20)
                             }
+                            Text("UniMate\nv0.7.4release\nELEC3644 Group 7")
+                                .foregroundColor(.gray)
+                                .font(.footnote)
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: .infinity, alignment: .center)
                         }
                         .padding()
                     }
@@ -211,83 +217,8 @@ struct ProfileView: View {
         }
         .task() {
                 await viewModel.fetchUser(userId: userId)
+        }.onTapGesture {
+            UIApplication.shared.endEditing()
         }
     }
 }
-
-// Add ImagePicker struct for handling image selection
-struct ImagePicker: UIViewControllerRepresentable {
-    @Binding var image: UIImage?
-    @Environment(\.presentationMode) var presentationMode
-    
-    func makeUIViewController(context: Context) -> UIImagePickerController {
-        let picker = UIImagePickerController()
-        picker.delegate = context.coordinator
-        return picker
-    }
-    
-    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
-    
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-    
-    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-        let parent: ImagePicker
-        
-        init(_ parent: ImagePicker) {
-            self.parent = parent
-        }
-        
-        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
-            if let image = info[.originalImage] as? UIImage {
-                parent.image = image
-            }
-            parent.presentationMode.wrappedValue.dismiss()
-        }
-    }
-}
-
-// Views/Main/ProfileView.swift
-//import SwiftUI
-//
-//struct ProfileView: View {
-//    @EnvironmentObject var authViewModel: AuthViewModel
-//
-//    var body: some View {
-//        NavigationView {
-//            Form {
-//                Section(header: Text("User Information")) {
-//                    HStack {
-//                        Text("Username")
-//                        Spacer()
-//                        Text(authViewModel.currentUser?.username ?? "")
-//                            .foregroundColor(.gray)
-//                    }
-//
-//                    HStack {
-//                        Text("Email")
-//                        Spacer()
-//                        Text(authViewModel.currentUser?.email ?? "")
-//                            .foregroundColor(.gray)
-//                    }
-//                }
-//
-//                Section {
-//                    Button(action: {
-//                        authViewModel.signOut()
-//                    }) {
-//                        Text("Sign Out")
-//                            .foregroundColor(.red)
-//                    }
-//                }
-//            }
-//            .navigationTitle("Profile")
-//        }
-//    }
-//}
-//
-//#Preview {
-//    ProfileView()
-//        .environmentObject(AuthViewModel())
-//}

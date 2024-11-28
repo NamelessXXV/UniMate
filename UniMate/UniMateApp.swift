@@ -1,4 +1,3 @@
-// UniMateApp.swift
 import SwiftUI
 import FirebaseCore
 import FirebaseAuth

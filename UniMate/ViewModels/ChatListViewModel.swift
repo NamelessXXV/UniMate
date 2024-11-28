@@ -30,12 +30,11 @@ class ChatListViewModel: ObservableObject {
     }
     
     func setupAutoRefresh() {
-        // Invalidate existing timer if any
         autoRefreshTimer?.invalidate()
         
-        // Create new timer that fires every 3 seconds
+        // 5 seconds timer
         autoRefreshTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
-            print("🔄 Chat refreshed")
+            print("🔄 Chat refreshed")  // for debug
             self?.loadChats()
         }
     }
@@ -80,10 +79,8 @@ class ChatListViewModel: ObservableObject {
     private func updateCoreData(with newPreviews: [ChatPreview]) {
         let context = coreDataManager.viewContext
         
-        // Clear existing data
         coreDataManager.clearAllChatPreviews()
         
-        // Insert new data
         for preview in newPreviews {
             let entity = ChatPreviewEntity(context: context)
             entity.id = preview.id
@@ -106,7 +103,6 @@ class ChatListViewModel: ObservableObject {
             return
         }
         
-//        print("Debug: Loading chats for user: \(currentUserId)")
         let userChatsRef = database.reference().child("user_chats").child(currentUserId)
         
         if let handle = userChatsHandle {
@@ -114,7 +110,6 @@ class ChatListViewModel: ObservableObject {
         }
         
         userChatsHandle = userChatsRef.observe(.value) { [weak self] snapshot in
-//            print("Debug: Received snapshot: \(snapshot.value ?? "nil")")
             
             guard let self = self else { return }
             
@@ -127,18 +122,13 @@ class ChatListViewModel: ObservableObject {
                 return
             }
             
-//            print("Debug: Found \(chatDict.count) chats")
-            
             // Create an async Task to handle all chat previews
             Task {
                 var newPreviews: [ChatPreview] = []
                 
-                // Use async/await instead of DispatchGroup
                 for (chatId, _) in chatDict {
-//                    print("Debug: Fetching preview for chat: \(chatId)")
                     
                     do {
-                        // Convert Firebase callback to async/await
                         let chatData = try await withCheckedThrowingContinuation { continuation in
                             let chatRef = self.database.reference().child("chats").child(chatId)
                             chatRef.observeSingleEvent(of: .value) { snapshot in
@@ -153,7 +143,6 @@ class ChatListViewModel: ObservableObject {
                         guard let participants = chatData["participants"] as? [String: Bool] else { continue }
                         
                         let otherUserId = participants.keys.first { $0 != self.currentUserId } ?? ""
-//                        print("Debug: Other user ID: \(otherUserId)")
                         
                         let otherUserPhotoURL = try await FirebaseService.shared.fetchUser(userId: otherUserId).photoURL
                         let messages = chatData["messages"] as? [String: Any] ?? [:]
@@ -199,7 +188,6 @@ class ChatListViewModel: ObservableObject {
                 
                 // Update UI on main thread after all chats are processed
                 await MainActor.run {
-//                    print("Debug: Updating chat previews, count: \(newPreviews.count)")
                     let sortedPreviews = newPreviews.sorted { ($0.timestamp ?? 0) > ($1.timestamp ?? 0) }
                     self.updateCoreData(with: sortedPreviews)
                     self.chatPreviews = sortedPreviews

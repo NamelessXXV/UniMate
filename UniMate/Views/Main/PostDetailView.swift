@@ -13,8 +13,8 @@ struct PostDetailView: View {
             NavigationLink(destination: ProfileView(userId: post.authorId)) {
                 HStack(alignment: .center, spacing: 10) {
                     // Profile Picture
-                    if false, /*FirebaseService.shared.fetchUser(userId: post.authorId).photoURL,*/
-                       let url = URL(string: "") {
+                    if let photoURL = viewModel.userPhotos[post.authorId],
+                       let url = URL(string: photoURL) {
                         AsyncImage(url: url) { image in
                             image
                                 .resizable()
@@ -36,7 +36,7 @@ struct PostDetailView: View {
                         .font(.headline)
                         .foregroundColor(.primary)
                 }
-            }
+            }.task{ await viewModel.fetchUserPhoto(userId: post.authorId)}
             
             Text(post.title)
                 .font(.title2)

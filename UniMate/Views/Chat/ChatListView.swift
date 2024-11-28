@@ -14,7 +14,7 @@ struct ChatListView: View {
     @Environment(\.scenePhase) var scenePhase
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Group {
                 if viewModel.chatPreviews.isEmpty {
                     VStack(spacing: 16) {

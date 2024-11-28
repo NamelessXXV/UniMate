@@ -1,9 +1,6 @@
-//
-//  DateHeadere.swift
-//  UniMate
-//
-//  Created by Cheung Yan Shek 3036065575 on 26/11/2024.
-//
+// DateHeader.swift
+// Wong Kai Ching 3036067884
+
 import SwiftUI
 
 struct DateHeader: View {

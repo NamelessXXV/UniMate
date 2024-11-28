@@ -1,9 +1,5 @@
-//
-//  MessageBubble.swift
-//  UniMate
-//
-//  Created by Cheung Yan Shek 3036065575 on 25/11/2024.
-//
+// MessageBubble.swift
+// Wong Kai Ching 3036067884
 
 import SwiftUI
 

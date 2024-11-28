@@ -1,5 +1,5 @@
-// Created by Wu Kwun To
-// UID: 3036050726
+// CommentsView.swift
+// Wong Kai Ching 3036067884
 
 import SwiftUI
 
@@ -12,7 +12,7 @@ struct CommentsView: View {
     @State private var isLoading = true
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 PostDetailView(viewModel: viewModel, post: post)
                     .padding()
